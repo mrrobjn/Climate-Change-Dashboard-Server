@@ -5,7 +5,7 @@ export const fetchAPI= async(api)=>{
         const response=await axios.get(api)
         return response.data
     }catch(error){
-        console.error(error)
+        return error
     }
 
 }
