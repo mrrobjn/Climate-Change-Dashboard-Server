@@ -13,67 +13,51 @@ export const getAirquality = async (req, res) => {
 
   const collection = db.collection("air-quality");
 
-// let docs = await collection.find({}).toArray();
-// let count=0
-// docs.forEach(doc => {
-//   collection.updateOne(
-//     { _id: doc._id },
-//     {
-//       $set: {
-//         location: {
-//           type: "Point",
-//           coordinates: [doc.longitude, doc.latitude]
-//         },
-//       }
-//     }
-//   );
-//   count++;
-//   console.log(`Updated document count: ${count}`);
-// });
-collection.createIndex( { "location" : "2dsphere" } )
 
-  // const query = {
-  //   location: {
-  //     $near: {
-  //       $geometry: {
-  //         type: "Point",
-  //         coordinates: [longitude, latitude],
-  //       },
-  //     },
-  //   },
-  // };
+// collection.createIndex( { "location" : "2dsphere" } )
 
-  // const result = await collection.findOne(query);
+  const query = {
+    location: {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [longitude, latitude],
+        },
+      },
+    },
+  };
 
-  // const hourlyArray = hourly.split(",");
+  const result = await collection.findOne(query);
 
-  // const hourly_units = {};
-  // const hourlyData = {};
+  const hourlyArray = hourly.split(",");
 
-  // for (const unit of hourlyArray) {
-  //   if (result.hourly_units.hasOwnProperty(unit)) {
-  //     hourly_units[unit] = result.hourly_units[unit];
-  //   }
-  // }
+  const hourly_units = {};
+  const hourlyData = {};
 
-  // for (const unit of hourlyArray) {
-  //   if (result.hourly.hasOwnProperty(unit)) {
-  //     hourlyData[unit] = result.hourly[unit];
-  //   }
-  // }
+  for (const unit of hourlyArray) {
+    if (result.hourly_units.hasOwnProperty(unit)) {
+      hourly_units[unit] = result.hourly_units[unit];
+    }
+  }
 
-  // let newTimeArray = [];
+  for (const unit of hourlyArray) {
+    if (result.hourly.hasOwnProperty(unit)) {
+      hourlyData[unit] = result.hourly[unit];
+    }
+  }
 
-  // // Loop through the existing array of times
-  // for(let i = 0; i < result.hourly.time.length; i++) {
-  //   // Convert the current time to a Date object
-  //   let currentTime = new Date(result.hourly.time[i]);
-  //   // Check if the current time is within the start and end dates
-  //   if(currentTime >= startDate && currentTime <= endDate) {
-  //     // If it is, push it into the new array
-  //     newTimeArray.push(currentTime.toISOString());
-  //   }
-  // }
+  let newTimeArray = [];
 
-  // res.json({ hourly_units,time:newTimeArray });
+  // Loop through the existing array of times
+  for(let i = 0; i < result.hourly.time.length; i++) {
+    // Convert the current time to a Date object
+    let currentTime = new Date(result.hourly.time[i]);
+    // Check if the current time is within the start and end dates
+    if(currentTime >= startDate && currentTime <= endDate) {
+      // If it is, push it into the new array
+      newTimeArray.push(currentTime.toISOString());
+    }
+  }
+
+  res.json({ hourly_units,time:newTimeArray });
 };
