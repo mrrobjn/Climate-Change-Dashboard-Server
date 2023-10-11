@@ -1,8 +1,66 @@
-import chalk from "chalk";
-import { fetchAPI } from "../api/fetchApi.js";
+import { stringify,parse } from "flatted";
 import { connectToDatabase } from "../db/index.js";
-import { parse, stringify } from "flatted";
+import { fetchAPI } from "../api/fetchApi.js";
+import chalk from "chalk";
 
+export const getAirQuality = async (req, res) => {
+  let { latitude, longitude, hourly, start_date, end_date } = req.query;
+
+  latitude = parseFloat(latitude);
+  longitude = parseFloat(longitude);
+  let startDate = new Date(start_date);
+  let endDate = new Date(end_date);
+
+  const client = await connectToDatabase();
+  const db = client.db("CCD");
+
+  const collection = db.collection("air-quality");
+
+  const query = {
+    location: {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [longitude, latitude],
+        },
+      },
+    },
+  };
+
+  const result = await collection.findOne(query);
+
+  const hourlyArray = hourly.split(",");
+
+  const hourly_units = {};
+  const hourlyData = {};
+
+  for (const unit of hourlyArray) {
+    if (result.hourly_units.hasOwnProperty(unit)) {
+      hourly_units[unit] = result.hourly_units[unit];
+    }
+  }
+
+  for (const unit of hourlyArray) {
+    if (result.hourly.hasOwnProperty(unit)) {
+      hourlyData[unit] = result.hourly[unit];
+    }
+  }
+
+  let newTimeArray = [];
+
+  // Loop through the existing array of times
+  for(let i = 0; i < result.hourly.time.length; i++) {
+    // Convert the current time to a Date object
+    let currentTime = new Date(result.hourly.time[i]);
+    // Check if the current time is within the start and end dates
+    if(currentTime >= startDate && currentTime <= endDate) {
+      // If it is, push it into the new array
+      newTimeArray.push(currentTime.toISOString());
+    }
+  }
+
+  res.json({ hourly_units,time:newTimeArray });
+};
 export const crawAirQuality = async (req, res) => {
   try {
     const client = await connectToDatabase();
@@ -60,36 +118,5 @@ export const crawAirQuality = async (req, res) => {
     }
   } catch (error) {
     console.log(`An error occurred: ${error}`);
-  }
-};
-
-export const crawCountries = async (req, res) => {
-  try {
-    const client = await connectToDatabase();
-    const db = client.db("CCD");
-
-    const db1 = db.collection("fileset");
-    const db2 = db.collection("countries");
-
-    const distinctCountries = await db1.distinct("country");
-
-    await Promise.all(
-      distinctCountries.map(async (country) => {
-        const encodedCountry = encodeURIComponent(country);
-        const data = await fetchAPI(
-          `https://geocoding-api.open-meteo.com/v1/search?name=${encodedCountry}&count=1&language=en&format=json`
-          );
-          if (data.results) {
-            await db2.insertOne(data.results[0]);
-            console.log(`Complete data for ${country}`);
-          return data.results[0];
-        } else {
-          console.error(chalk.red(`No results found for ${country}`));
-          return null;
-        }
-      })
-    );
-  } catch (error) {
-    console.error(chalk.red(`An error occurred: ${error}`));
   }
 };

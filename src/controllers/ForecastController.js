@@ -1,5 +1,5 @@
 import { fetchAPI } from "../api/fetchApi.js";
-export const getWeatherForecast = async (req, res) => {
+export const getForecast = async (req, res) => {
   const { latitude, longitude, hourly, daily } = req.query;
   let apiUrl = "";
   if (daily) {

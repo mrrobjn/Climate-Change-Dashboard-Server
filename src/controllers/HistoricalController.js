@@ -1,5 +1,5 @@
 import { fetchAPI } from "../api/fetchApi.js";
-export const getHistoricalWeather = async (req, res) => {
+export const getHistorical = async (req, res) => {
   const { latitude, longitude, hourly, startDate, endDate, daily } = req.query;
   let apiUrl = "";
   if (daily) {
