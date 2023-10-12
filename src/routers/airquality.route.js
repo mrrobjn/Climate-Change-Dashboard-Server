@@ -1,12 +1,12 @@
 import express from "express";
 import {
-  getAirquality,
+  getAirQuality,
   crawAirQuality,
 } from "../controllers/AirQualityController.js";
 
 const router = express.Router();
 
-router.get("/get", getAirquality);
+router.get("/get", getAirQuality);
 router.get("/craw", crawAirQuality);
 
 export default router;

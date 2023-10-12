@@ -11,7 +11,7 @@ export const getLocation = async (req, res) => {
     const lowerCaseName = name.toLowerCase();
     
     // Find the first 5 documents where the lower case name field matches the lower case name from the request query
-    let results = await collection.find({ name: { $regex : new RegExp(lowerCaseName, "i") } }).limit(5).toArray();
+    let results = await collection.find({ name: { $regex: new RegExp(lowerCaseName, "i") } }).limit(5).toArray();
     
     res.json(results);
   };
