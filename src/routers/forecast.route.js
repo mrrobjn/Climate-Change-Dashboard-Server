@@ -3,6 +3,6 @@ import { getForecast } from '../controllers/ForeCastController.js'
 
 const router = express.Router()
 
-router.get('/', getForecast)
+router.get('/get', getForecast)
 
 export default router

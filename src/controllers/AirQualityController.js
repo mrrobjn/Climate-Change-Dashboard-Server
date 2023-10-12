@@ -1,7 +1,8 @@
-import { stringify,parse } from "flatted";
+import { stringify, parse } from "flatted";
 import { connectToDatabase } from "../db/index.js";
 import { fetchAPI } from "../api/fetchApi.js";
 import chalk from "chalk";
+import { convertDateTime } from "../utils/convertDateTime.js";
 
 export const getAirQuality = async (req, res) => {
   let { latitude, longitude, hourly, start_date, end_date } = req.query;
@@ -16,6 +17,7 @@ export const getAirQuality = async (req, res) => {
 
   const collection = db.collection("air-quality");
 
+  // collection.createIndex({ location: "2dsphere" });
   const query = {
     location: {
       $near: {
@@ -42,24 +44,28 @@ export const getAirQuality = async (req, res) => {
 
   for (const unit of hourlyArray) {
     if (result.hourly.hasOwnProperty(unit)) {
-      hourlyData[unit] = result.hourly[unit];
+      let filteredData = [];
+      for (let i = 0; i < result.hourly.time.length; i++) {
+        let currentTime = new Date(result.hourly.time[i]);
+        if (currentTime >= startDate && currentTime <= endDate) {
+          filteredData.push(result.hourly[unit][i]);
+        }
+      }
+      hourlyData[unit] = filteredData;
     }
   }
 
   let newTimeArray = [];
 
-  // Loop through the existing array of times
-  for(let i = 0; i < result.hourly.time.length; i++) {
-    // Convert the current time to a Date object
+  for (let i = 0; i < result.hourly.time.length; i++) {
     let currentTime = new Date(result.hourly.time[i]);
-    // Check if the current time is within the start and end dates
-    if(currentTime >= startDate && currentTime <= endDate) {
-      // If it is, push it into the new array
-      newTimeArray.push(currentTime.toISOString());
+    if (currentTime >= startDate && currentTime <= endDate) {
+      newTimeArray.push(currentTime);
     }
   }
 
-  res.json({ hourly_units,time:newTimeArray });
+  res.json({ hourly_units, hourly: { ...hourlyData, time: convertDateTime(newTimeArray) } });
+
 };
 export const crawAirQuality = async (req, res) => {
   try {
