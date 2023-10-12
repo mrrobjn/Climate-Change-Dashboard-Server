@@ -1,8 +1,10 @@
 import express from 'express'
-import { getForecast } from '../controllers/ForeCastController.js'
+import { getForecast,crawForecast } from '../controllers/ForeCastController.js'
 
 const router = express.Router()
 
-router.get('/', getForecast)
+router.get('/getForecast', getForecast)
+router.get('/crawForecast',crawForecast)
+
 
 export default router
