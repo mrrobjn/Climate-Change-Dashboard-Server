@@ -4,5 +4,5 @@ import { getHistorical,crawHistorical} from '../controllers/HistoricalController
 const router = express.Router()
 
 router.get('/get', getHistorical)
-router.get('/crawHistorical', crawHistorical)
+router.get('/craw', crawHistorical)
 export default router
