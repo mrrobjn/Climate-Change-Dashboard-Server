@@ -6,7 +6,7 @@ import {
 
 const router = express.Router();
 
-router.get("/get", getAirQuality);
-router.get("/craw", crawAirQuality);
+router.get('/get', getAirQuality);
+router.get('/craw', crawAirQuality);
 
 export default router;
