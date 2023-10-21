@@ -2,16 +2,16 @@ import { stringify, parse } from "flatted";
 import { connectToDatabase } from "../db/index.js";
 import { fetchAPI } from "../api/fetchApi.js";
 import chalk from "chalk";
-import { convertDateTime } from "../utils/convertDateTime.js";
+import { convertToLocalTime } from "../utils/convertDateTime.js";
+import moment from "moment-timezone";
 
 export const getAirQuality = async (req, res) => {
   let { latitude, longitude, hourly, start_date, end_date } = req.query;
 
   latitude = parseFloat(latitude);
   longitude = parseFloat(longitude);
-  let startDate = new Date(start_date);
-  let endDate = new Date(end_date);
-
+  let startDate = new Date(moment(start_date).local().format());
+  let endDate = new Date(moment(end_date).local().format());
   const client = await connectToDatabase();
   const db = client.db("CCD");
 
@@ -34,7 +34,6 @@ export const getAirQuality = async (req, res) => {
   const hourlyArray = hourly.split(",");
 
   const hourly_units = {};
-  const hourlyData = {};
 
   for (const unit of hourlyArray) {
     if (result.hourly_units.hasOwnProperty(unit)) {
@@ -42,31 +41,74 @@ export const getAirQuality = async (req, res) => {
     }
   }
 
-  for (const unit of hourlyArray) {
-    if (result.hourly.hasOwnProperty(unit)) {
-      let filteredData = [];
-      for (let i = 0; i < result.hourly.time.length; i++) {
-        let currentTime = new Date(result.hourly.time[i]);
-        if (currentTime >= startDate && currentTime <= endDate) {
-          filteredData.push(result.hourly[unit][i]);
+  let newTimeArray = [];
+  // Check
+  if ((endDate - startDate) / (24 * 60 * 60 * 1000) > 3) {
+    let dailyData = {};
+    for (const unit of hourlyArray) {
+      dailyData[unit] = [];
+    }
+
+    let currentDate = startDate;
+    while (currentDate <= endDate) {
+      for (const unit of hourlyArray) {
+        if (result.hourly.hasOwnProperty(unit)) {
+          let dailyTotal = 0;
+          let count = 0;
+          for (let i = 0; i < result.hourly.time.length; i++) {
+            let currentTime = new Date(result.hourly.time[i]);
+            if (
+              currentTime >= currentDate &&
+              currentTime <
+                new Date(currentDate.getTime() + 24 * 60 * 60 * 1000)
+            ) {
+              dailyTotal += result.hourly[unit][i];
+              count++;
+            }
+          }
+          if (count > 0) {
+            dailyData[unit].push(dailyTotal / count);
+          }
         }
       }
-      hourlyData[unit] = filteredData;
+      newTimeArray.push(new Date(currentDate.getTime()));
+      currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
     }
+
+    res.json({
+      hourly_units,
+      hourly: { ...dailyData, time: convertToLocalTime(newTimeArray) },
+    });
   }
+  // Check
+  else {
+    const hourlyData = {};
 
-  let newTimeArray = [];
-
-  for (let i = 0; i < result.hourly.time.length; i++) {
-    let currentTime = new Date(result.hourly.time[i]);
-    if (currentTime >= startDate && currentTime <= endDate) {
-      newTimeArray.push(currentTime);
+    for (const unit of hourlyArray) {
+      if (result.hourly.hasOwnProperty(unit)) {
+        let filteredData = [];
+        for (let i = 0; i < result.hourly.time.length; i++) {
+          let currentTime = new Date(result.hourly.time[i]);
+          if (currentTime >= startDate && currentTime <= endDate) {
+            filteredData.push(result.hourly[unit][i]);
+          }
+        }
+        hourlyData[unit] = filteredData;
+      }
     }
+    for (let i = 0; i < result.hourly.time.length; i++) {
+      let currentTime = new Date(result.hourly.time[i]);
+      if (currentTime >= startDate && currentTime <= endDate) {
+        newTimeArray.push(currentTime);
+      }
+    }
+    res.json({
+      hourly_units,
+      hourly: { ...hourlyData, time: convertToLocalTime(newTimeArray) },
+    });
   }
-
-  res.json({ hourly_units, hourly: { ...hourlyData, time: convertDateTime(newTimeArray) } });
-
 };
+
 export const crawAirQuality = async (req, res) => {
   try {
     const client = await connectToDatabase();
