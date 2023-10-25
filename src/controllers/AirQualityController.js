@@ -2,7 +2,7 @@ import { stringify, parse } from "flatted";
 import { connectToDatabase } from "../db/index.js";
 import { fetchAPI } from "../api/fetchApi.js";
 import chalk from "chalk";
-import { convertToLocalTime } from "../utils/convertDateTime.js";
+import { convertDatetimeArrayToDateArray, convertToLocalTime } from "../utils/convertDateTime.js";
 import moment from "moment-timezone";
 
 export const getAirQuality = async (req, res) => {
@@ -77,7 +77,7 @@ export const getAirQuality = async (req, res) => {
 
     res.json({
       hourly_units,
-      hourly: { ...dailyData, time: convertToLocalTime(newTimeArray) },
+      hourly: { ...dailyData, time: convertDatetimeArrayToDateArray(convertToLocalTime(newTimeArray)) },
     });
   }
   // Check
