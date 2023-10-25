@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.linear_model import LinearRegression
+import sys
 
 # Your temperature data
 temps = [13.4, 13, 12.9, 13, 13, 13.2, 13.5, 14.2, 15]
@@ -18,5 +19,4 @@ predicted_temp = model.predict(future_hour)
 print (predicted_temp)
 
 
-# import sys
 # print(sys.executable)
