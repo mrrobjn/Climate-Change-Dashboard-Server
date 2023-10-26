@@ -4,6 +4,7 @@ import matplotlib.ticker as ticker
 import base64
 from io import BytesIO
 from datetime import datetime
+import mpld3
 
 # Your data
 dates = [
@@ -35,12 +36,13 @@ ax.set(xlabel="Date", ylabel="Temperature", title="Temperature over time")
 # Automatically set the maximum number of labels on the x-axis
 ax.xaxis.set_major_locator(ticker.MaxNLocator(6))
 
-# Save the figure to a BytesIO object
-buf = BytesIO()
-plt.savefig(buf, format="png")
-buf.seek(0)
+# # Save the figure to a BytesIO object
+# buf = BytesIO()
+# plt.savefig(buf, format="png")
+# buf.seek(0)
 
-# Convert the BytesIO object to a base64 string
-image_base64 = base64.b64encode(buf.read()).decode("utf-8")
+# # Convert the BytesIO object to a base64 string
+# image_base64 = base64.b64encode(buf.read()).decode("utf-8")
 
-print(image_base64)
+# print(image_base64)
+mpld3.save_html(fig, "plot.html")

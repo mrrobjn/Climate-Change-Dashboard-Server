@@ -5,29 +5,27 @@ import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
 
-os.environ['OPENAI_API_KEY'] = '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'
+os.environ['COHERE_API_KEY'] = 'MR15LMwLvq4ez77b4Df0T8s5zMK3qbv2Nv3xhL5k'
+
 # Get the CSV file path from the arguments
-csv_file_path = sys.argv[1]
+csv_file_path = "C:\\Users\\USER\\Desktop\\archive.csv"
 
 # Initialize the LIDA manager
-lida = Manager(text_gen = llm("openai")) # You can replace "openai" with other providers like "palm", "cohere", etc.
+lida = Manager(text_gen = llm("cohere"))
 
 # Summarize the data in your CSV file
-summary = lida.summarize(csv_file_path) # Replace "data/yourfile.csv" with the path to your CSV file
+summary = lida.summarize(csv_file_path)
 
 # Generate visualization goals
-goals = lida.goals(summary, n=2) # This will generate 2 goals for exploratory data analysis
-
+goals = lida.goals(summary, n=2)
 # Generate visualizations for the first goal
-charts = lida.visualize(summary=summary, goal=goals[0]) # This will generate visualizations for the first goal
+print(goals[0])
+chart_codes = lida.visualize(summary=summary, goal=goals[0])
 
-# Convert the chart to base64
-for chart in charts:
-    pic_IObytes = BytesIO()
-    chart.savefig(pic_IObytes, format='png')
-    pic_IObytes.seek(0)
-    pic_hash = base64.b64encode(pic_IObytes.read())
+# Execute each code string and save the resulting plot
+for chart_code in chart_codes:
+    if isinstance(chart_code, str):
+        exec(chart_code)
+        plt.show()  # This will display the plot
 
-    # Print the chart in base64 format
-    print(pic_hash)
 

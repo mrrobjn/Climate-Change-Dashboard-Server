@@ -8,4 +8,5 @@ export let options = {
     mode: "text",
     scriptPath: path.resolve(__dirname, "..", "scripts"),
     pythonOptions: ["-u"], // get print results in real-time
+    args:["C:\\Users\\USER\\Desktop\\archive.csv"]
   };
