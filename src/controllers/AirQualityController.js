@@ -2,9 +2,14 @@ import { stringify, parse } from "flatted";
 import { connectToDatabase } from "../db/index.js";
 import { fetchAPI } from "../api/fetchApi.js";
 import chalk from "chalk";
-import { convertDatetimeArrayToDateArray, convertToLocalTime } from "../utils/convertDateTime.js";
+import {  convertToLocalTime } from "../utils/convertDateTime.js";
 import moment from "moment-timezone";
+import { PythonShell } from "python-shell";
+import path from "path";
+import url from 'url';
 
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 export const getAirQuality = async (req, res) => {
   let { latitude, longitude, hourly, start_date, end_date } = req.query;
 
@@ -43,7 +48,7 @@ export const getAirQuality = async (req, res) => {
 
   let newTimeArray = [];
   // Check
-  if ((endDate - startDate) / (24 * 60 * 60 * 1000) > 3) {
+  if ((endDate - startDate) / (24 * 60 * 60 * 1000) > 10) {
     let dailyData = {};
     for (const unit of hourlyArray) {
       dailyData[unit] = [];
@@ -74,11 +79,19 @@ export const getAirQuality = async (req, res) => {
       newTimeArray.push(new Date(currentDate.getTime()));
       currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
     }
-
-    res.json({
-      hourly_units,
-      hourly: { ...dailyData, time: convertDatetimeArrayToDateArray(convertToLocalTime(newTimeArray)) },
+    let options = {
+      mode: "text",
+      scriptPath: path.resolve(__dirname, "..", "scripts"),
+      pythonOptions: ["-u"], // get print results in real-time
+      args:[convertToLocalTime(newTimeArray),JSON.stringify(dailyData),hourlyArray]
+    };
+    PythonShell.run('air_quality.py', options).then(results=>{
+      res.json(results);
     });
+    // res.json({
+    //   hourly_units,
+    //   hourly: { ...dailyData, time: convertDatetimeArrayToDateArray(convertToLocalTime(newTimeArray)) },
+    // });
   }
   // Check
   else {
@@ -102,10 +115,19 @@ export const getAirQuality = async (req, res) => {
         newTimeArray.push(currentTime);
       }
     }
-    res.json({
-      hourly_units,
-      hourly: { ...hourlyData, time: convertToLocalTime(newTimeArray) },
+    let options = {
+      mode: "text",
+      scriptPath: path.resolve(__dirname, "..", "scripts"),
+      pythonOptions: ["-u"], // get print results in real-time
+      args:[convertToLocalTime(newTimeArray),JSON.stringify(hourlyData),hourlyArray]
+    };
+    PythonShell.run('air_quality.py', options).then(results=>{
+      res.json(results);
     });
+    // res.json({
+    //   hourly_units,
+    //   hourly: { ...hourlyData, time: convertToLocalTime(newTimeArray) },
+    // });
   }
 };
 

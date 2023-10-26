@@ -15,10 +15,13 @@ dates = [
     "2023-01-06",
     "2023-01-07",
     "2023-01-08",
+    "2023-01-09",
+    "2023-01-10",
+    "2023-01-11",
 ]
 # Convert string dates to datetime objects
 dates = [datetime.strptime(date, "%Y-%m-%d") for date in dates]
-temps = [20, 21, 19, 24, 65, 23, 12, 43]
+temps = [20, 21, 19, 24, 65, 23, 12, 43,21,12,23]
 
 # Create a figure and a set of subplots
 fig, ax = plt.subplots()
