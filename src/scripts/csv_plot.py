@@ -1,7 +1,6 @@
 import pandas as pd
 import plotly.express as px
 import numpy as np
-import json
 
 # Specify your filename
 filename = "C:\\Users\\USER\\Desktop\\archive.csv"

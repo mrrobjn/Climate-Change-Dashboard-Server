@@ -1,7 +1,9 @@
 import { PythonShell } from "python-shell";
-import { options } from "../config/pythonConfig.js";
+import { pythonConfig } from "../config/pythonConfig.js";
+import { convertGoalToArr } from "../utils/convertGoal.js";
 export const LIDACSV = (req,res)=>{
-      PythonShell.run('Lida_scripts.py', options).then(results=>{
+      PythonShell.run('Lida_scripts.py', pythonConfig()).then(results=>{
+        // res.json(results);
         res.json(results[0]);
       });
 }
