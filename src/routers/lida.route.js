@@ -1,8 +1,10 @@
 import express from "express";
-import { LIDACSV } from "../controllers/LidaController.js";
+import { uploadData } from "../controllers/LidaController.js";
+import multer from "multer";
 
 const router = express.Router();
+const upload = multer({ dest: "src/uploads/" });
 
-router.get("/get", LIDACSV);
+router.post("/post", upload.single("file"), uploadData);
 
 export default router;

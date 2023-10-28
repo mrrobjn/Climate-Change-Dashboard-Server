@@ -1,28 +1,16 @@
-export const convertGoalToArr = (str) => {
-  str = str.replace("Goal(", "").slice(0, -1);
-
-  let arr = str.split(", ");
-
-  let obj = {};
-
-  arr.forEach((item) => {
-    // Split each item into key and value using '=' as separator
-  let parts = item.split('=');
+export const convertGoals = (goalString) => {
+  var goalMatches = goalString.slice(1, -1).split(', Goal');
   
-  // Check if parts array has two elements
-  if (parts.length === 2) {
-    let [key, value] = parts;
-    
-    // Remove the single quotes from the value
-    value = value.replace(/'/g, "");
-    
-    // Add the key-value pair to the object
-    obj[key] = value;
-  }
+  var arrayOfObjects = goalMatches.map((item) => {
+    // Add 'Goal' back to the start of each string
+    var match = ('Goal' + item).match(/Goal\(question='(.+)', visualization='(.+)', rationale='(.+)', index=(\d+)\)/);
+    return {
+      question: match[1],
+      visualization: match[2],
+      rationale: match[3],
+      index: parseInt(match[4]),
+    };
   });
-
-  // Convert the object to an array of objects
-  let result = [obj];
-
-  return result;
+  
+  return arrayOfObjects;
 };
