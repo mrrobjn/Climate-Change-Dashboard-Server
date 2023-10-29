@@ -1,17 +1,39 @@
 import { PythonShell } from "python-shell";
+import { pythonConfig } from "../config/pythonConfig.js";
+import { convertGoals } from "../utils/convertGoal.js";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import path from "path";
 
-const LIDACSV = ()=>{
-    let options = {
-        mode: 'text',
-        pythonOptions: ['-u'], // get print results in real-time
-        scriptPath: '/path/to/your/python/script', // update this to the path of your LIDA script
-        args: ['/path/to/your/csv/file'] // pass the CSV file path as an argument
-      };
-      
-      PythonShell.run('lida_script.py', options, function (err, results) {
-        if (err) throw err;
-        // results is an array consisting of messages collected during execution
-        console.log('results:', results);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+export const uploadData = (req, res) => {
+  try {
+    let data = path.join(__dirname, "../..", req.file.path);
+    PythonShell.run("Lida_scripts.py", pythonConfig([data])).then((results) => {
+      res.json({
+        summary: JSON.parse(results[0].replace(/'/g, '"')),
+        goals: convertGoals(results[1]),
+        // charts: JSON.parse(results[2].replace(/'/g, '"')),
+        path: data,
       });
-}
-
+    });
+  } catch (error) {
+    res.json(error);
+  }
+};
+export const postSingleGoal = (req, res) => {
+  try {
+    const { path, goal } = req.body;
+    PythonShell.run("single_goal.py", pythonConfig([path, goal])).then(
+      (results) => {
+        res.json({
+          results,
+        });
+      }
+    );
+  } catch (error) {
+    res.json(error);
+  }
+};
