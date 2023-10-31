@@ -1,26 +1,28 @@
-from lida import Manager, llm
+from lida import Manager, llm, TextGenerationConfig
 import sys
 import pandas as pd
 
 df = pd.read_csv(sys.argv[1])
 custom_goal = sys.argv[2]
-instructions = sys.argv[3]
+instructions = sys.argv[3].split(',')
 
 lida = Manager(
     text_gen=llm(provider="cohere", api_key="MR15LMwLvq4ez77b4Df0T8s5zMK3qbv2Nv3xhL5k")
 )
-summary = lida.summarize(df=df)
+summary = lida.summarize(data=df)
 
 goals = lida.goals(summary, n=5, persona=custom_goal)
 
-charts = lida.visualize(summary=summary, goal=goals[0], library="matplotlib")
+charts = lida.visualize(summary=summary, goal=goals[0], library="seaborn")
 
 edited_charts = lida.edit(
     code=charts[0].code,
     summary=summary,
     instructions=instructions,
-    library="matplotlib",
+    textgen_config=TextGenerationConfig,
+    library="seaborn"
 )
 
 if edited_charts and edited_charts[0].status is True:
     print(edited_charts[0].raster)
+

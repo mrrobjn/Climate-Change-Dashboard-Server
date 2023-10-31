@@ -17,7 +17,6 @@ df = pd.read_csv(sys.argv[1], encoding="utf-8")
 lida = Manager(
     text_gen=llm(provider="cohere", api_key="MR15LMwLvq4ez77b4Df0T8s5zMK3qbv2Nv3xhL5k")
 )
-textgen_config = TextGenerationConfig(n=1, temperature=0.1, use_cache=True)
 
 summary = lida.summarize(data=df)
 
