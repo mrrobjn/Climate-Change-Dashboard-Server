@@ -13,9 +13,8 @@ export const uploadData = (req, res) => {
     let data = path.join(__dirname, "../..", req.file.path);
     PythonShell.run("Lida_scripts.py", pythonConfig([data])).then((results) => {
       res.json({
-        summary: JSON.parse(results[0].replace(/'/g, '"')),
-        goals: convertGoals(results[1]),
-        // charts: JSON.parse(results[2].replace(/'/g, '"')),
+        summary: JSON.parse(results[0]),
+        goals: JSON.parse(results[1]),
         path: data,
       });
     });
@@ -28,9 +27,7 @@ export const postSingleGoal = (req, res) => {
     const { path, goal } = req.body;
     PythonShell.run("single_goal.py", pythonConfig([path, goal])).then(
       (results) => {
-        res.json({
-          results,
-        });
+        res.json(results[0]);
       }
     );
   } catch (error) {
