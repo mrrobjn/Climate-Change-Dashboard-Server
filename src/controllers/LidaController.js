@@ -26,13 +26,20 @@ export const postSingleGoal = (req, res) => {
     const { path, goal } = req.body;
     PythonShell.run("single_goal.py", pythonConfig([path, goal])).then(
       (results) => {
-        res.json({ base64: results[0], goal: goal });
+        let parsedGoal;
+        try {
+          parsedGoal = JSON.parse(results[1]);
+        } catch (error) {
+          return res.status(400).json({ error: "Invalid JSON format" });
+        }
+        res.json({ base64: results[0], goal: parsedGoal });
       }
     );
   } catch (error) {
     res.json(error);
   }
 };
+
 export const modifyGoal = (req, res) => {
   try {
     const { path, goal, instruction } = req.body;
