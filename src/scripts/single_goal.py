@@ -4,7 +4,8 @@ import pandas as pd
 import io
 import json
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf8')
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf8")
+
 
 class Goal:
     def __init__(self, question, visualization, rationale, index):
@@ -13,12 +14,12 @@ class Goal:
         self.rationale = rationale
         self.index = index
 
+
 df = pd.read_csv(sys.argv[1], encoding="utf-8-sig")
 custom_goal = sys.argv[2]
+key = sys.argv[3]
 
-lida = Manager(
-    text_gen=llm(provider="cohere", api_key="MR15LMwLvq4ez77b4Df0T8s5zMK3qbv2Nv3xhL5k")
-)
+lida = Manager(text_gen=llm(provider="cohere", api_key=key))
 
 summary = lida.summarize(data=df)
 

@@ -4,6 +4,7 @@ import sys
 import pandas as pd
 import json
 
+
 class Goal:
     def __init__(self, question, visualization, rationale, index):
         self.question = question
@@ -13,15 +14,13 @@ class Goal:
 
 
 df = pd.read_csv(sys.argv[1], encoding="utf-8")
+key = sys.argv[2]
 
-lida = Manager(
-    text_gen=llm(provider="cohere", api_key="MR15LMwLvq4ez77b4Df0T8s5zMK3qbv2Nv3xhL5k")
-)
+lida = Manager(text_gen=llm(provider="cohere", api_key=key))
 
 summary = lida.summarize(data=df)
 
 goals = lida.goals(summary, n=3)
-
 
 
 print(json.dumps(summary).encode("utf-8").decode("utf-8"))

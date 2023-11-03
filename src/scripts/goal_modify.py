@@ -5,9 +5,10 @@ import pandas as pd
 df = pd.read_csv(sys.argv[1])
 custom_goal = sys.argv[2]
 instructions = sys.argv[3].split(',')
+key = sys.argv[4]
 
 lida = Manager(
-    text_gen=llm(provider="cohere", api_key="MR15LMwLvq4ez77b4Df0T8s5zMK3qbv2Nv3xhL5k")
+    text_gen=llm(provider="cohere", api_key=key)
 )
 summary = lida.summarize(data=df)
 

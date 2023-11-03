@@ -6,17 +6,20 @@ import path from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const api_key = process.env.COHERE_API_KEY;
 
 export const uploadData = (req, res) => {
   try {
     let data = path.join(__dirname, "../..", req.file.path);
-    PythonShell.run("Lida_scripts.py", pythonConfig([data])).then((results) => {
-      res.json({
-        summary: JSON.parse(results[0]),
-        goals: JSON.parse(results[1]),
-        path: data,
-      });
-    });
+    PythonShell.run("Lida_scripts.py", pythonConfig([data, api_key])).then(
+      (results) => {
+        res.json({
+          summary: JSON.parse(results[0]),
+          goals: JSON.parse(results[1]),
+          path: data,
+        });
+      }
+    );
   } catch (error) {
     res.json(error);
   }
@@ -24,7 +27,7 @@ export const uploadData = (req, res) => {
 export const postSingleGoal = (req, res) => {
   try {
     const { path, goal } = req.body;
-    PythonShell.run("single_goal.py", pythonConfig([path, goal])).then(
+    PythonShell.run("single_goal.py", pythonConfig([path, goal,api_key])).then(
       (results) => {
         let parsedGoal;
         try {
@@ -46,7 +49,7 @@ export const modifyGoal = (req, res) => {
     const { path, goal, instruction } = req.body;
     PythonShell.run(
       "goal_modify.py",
-      pythonConfig([path, goal, instruction])
+      pythonConfig([path, goal, instruction,api_key])
     ).then((results) => {
       res.json(results[0]);
     });
