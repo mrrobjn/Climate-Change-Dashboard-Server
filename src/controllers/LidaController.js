@@ -32,7 +32,8 @@ export const postSingleGoal = (req, res) => {
         } catch (error) {
           return res.status(400).json({ error: "Invalid JSON format" });
         }
-        res.json({ base64: results[0], goal: parsedGoal });
+        const { question, rationale, visualization } = parsedGoal;
+        res.json({ base64: results[0], question, rationale, visualization });
       }
     );
   } catch (error) {
