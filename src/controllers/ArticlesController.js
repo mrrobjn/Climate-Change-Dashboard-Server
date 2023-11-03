@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { connectToDatabase } from "../db/index.js";
 
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 import Article from "../app/models/Articles.js";
 import ArticleContent from "../app/models/Articlescontents.js";
 
@@ -31,35 +31,44 @@ export const getArticleDetail = async (req, res) => {
 
   const detailCollection = db.collection("articles_details");
 
-  const result = await detailCollection.find({ articles_id: new ObjectId(id) }).toArray();
+  const result = await detailCollection
+    .find({ articles_id: new ObjectId(id) })
+    .toArray();
   res.json(result);
 };
 
-
- export async function insert(req,res) {
-const ArticleID = new mongoose.Types.ObjectId();
-const dataToInsert = {
-  articles_id: ArticleID,
-  ...req.body,
-};
-const newArticle = new Article(dataToInsert);
-newArticle.save()
-  .then(() => {
-    const newArticleContent = new ArticleContent(dataToInsert);
-    newArticleContent.save()
-      .then(() => {
-        res.status(200).json({ message: "Create Article and ArticleContent successfully" });
-      })
-      .catch((error) => {
-        console.error( error);
-        res.status(400).json({ error });
+export async function insert(req, res) {
+  const ArticleID = new mongoose.Types.ObjectId();
+  const article = {
+    articles_id: ArticleID,
+    ...req.body,
+  };
+  const { contents } = req.body;
+  const newArticle = new Article(article);
+  newArticle
+    .save()
+    .then(() => {
+      contents.map((content, index) => {
+        content.order = index;
+        const newArticleContent = new ArticleContent(content);
+        newArticleContent
+          .save()
+          .then(() => {
+            res.status(200);
+          })
+          .catch((error) => {
+            console.error(error);
+            res.status(400).json({ error });
+          });
       });
-  })
-  .catch((error) => {
-    console.error( error);
-    res.status(400).json({ error});
-  });
-
+      res.status(200).json({
+        message: "Create Article successfully",
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(400).json({ error });
+    });
 }
 
 //delete
