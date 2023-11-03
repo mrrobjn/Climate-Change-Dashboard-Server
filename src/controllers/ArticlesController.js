@@ -3,7 +3,7 @@ import { connectToDatabase } from "../db/index.js";
 
 import mongoose from "mongoose";
 import Article from "../app/models/Articles.js";
-import ArticleContent from "../app/models/Articlescontents.js";
+import ArticleContent from "../app/models/ArticlesContents.js";
 
 export const getArticles = async (req, res) => {
   const client = await connectToDatabase();
@@ -49,7 +49,7 @@ export async function insert(req, res) {
     .save()
     .then(() => {
       contents.map((content, index) => {
-        content.order = index;
+        content.index = index;
         const newArticleContent = new ArticleContent(content);
         newArticleContent
           .save()
@@ -60,6 +60,7 @@ export async function insert(req, res) {
             console.error(error);
             res.status(400).json({ error });
           });
+          return;
       });
       res.status(200).json({
         message: "Create Article successfully",
