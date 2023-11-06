@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
       const ArticleContentSchema = new mongoose.Schema({
         articles_id: { type: String },
-        type:  { type: String },
+        type: { type: String, default: 'articles' }, 
         order:  { type: Number },
         data:  { type: String },
       },{

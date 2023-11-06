@@ -6,13 +6,20 @@ import Article from "../app/models/Articles.js";
 import ArticleContent from "../app/models/Articlescontents.js";
 
 export const getArticles = async (req, res) => {
-  const client = await connectToDatabase();
-  const db = client.db("CCD");
+  const page = parseInt(req.query.page) || 1; 
+  const perPage = 4;
 
-  const collection = db.collection("articles");
+  try {
+    const articles = await Article.find()
+      .skip((page - 1) * perPage)
+      .limit(perPage)
+      .exec();
 
-  const result = await collection.find({}).toArray();
-  res.json(result);
+    res.status(200).json(articles);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 'ERR':error });
+  }
 };
 export const getSingleArticle = async (req, res) => {
   const { id } = req.query;
@@ -61,26 +68,30 @@ newArticle.save()
   });
 
 }
+export async function Delete(req, res) {
+  const { id, type } = req.body;
+  try {
+    if (type === 'articles') {
 
-//delete
-// export async function deleteArticle(req, res) {
-//   try {
-//     // Connect to the MongoDB database
-//     await mongoose.connect('mongodb://127.0.0.1:27017/CCD', { useNewUrlParser: true, useUnifiedTopology: true });
-//     const { article } = (req.body);
-//     console.log(article);
-//     const result = await ArticleContent.deleteOne({_id: article });
-//     console.log(result.deletedCount);
-//     if (result.deletedCount === 1) {
-//       res.json({ message: 'Article content deleted successfully' });
-//     } else {
-//       res.status(404).json({ error: 'Article content not found or not deleted' });
-//     }
-//   } catch (error) {
-//     console.error('Error deleting article content:', error);
-//     res.status(500).json({ error: 'Delete failed' });
-//   } finally {
-//     // Close the database connection
-//     mongoose.connection.close();
-//   }
-// }
+      const articleDeleteResult = await Article.deleteOne({ _id: id });
+      const articleContentsDeleteResult = await ArticleContent.deleteMany({ articles_id: id });
+      if (articleDeleteResult.deletedCount > 0) {
+        res.json({ message: 'Deletion of articles completed.' });
+      } else {
+        res.json({ message: 'No articles found for deletion.' });
+      }
+    } else if (type === 'articles_content') {
+      const articleContentDeleteResult = await ArticleContent.deleteOne({ articles_id: id });
+      if (articleContentDeleteResult.deletedCount > 0) {
+        res.json({ message: 'Deletion of articles_content completed.' });
+      } else {
+        res.json({ message: 'No articles_content found for deletion.' });
+      }
+    } else {
+      res.json({ message: 'Invalid type parameter.' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.json({ message: error });
+  }
+}
