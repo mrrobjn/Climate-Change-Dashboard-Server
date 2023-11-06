@@ -77,7 +77,7 @@ export async function Delete(req, res) {
       } else {
         res.json({ message: 'No articles found for deletion.' });
       }
-    } else if (type === 'articles_content') {
+    } else if (type === 'article_content') {
       const articleContentDeleteResult = await ArticleContent.deleteOne({ articles_id: id });
       if (articleContentDeleteResult.deletedCount > 0) {
         res.json({ message: 'Deletion of articles_content completed.' });
