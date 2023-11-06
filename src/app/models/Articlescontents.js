@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 const ArticleContentSchema = new mongoose.Schema(
   {
     articles_id: { type: String },
+    type: { type: String, default: 'article_content' }, 
     base64: { type: String },
     question: { type: String },
     rationale: { type: String },
