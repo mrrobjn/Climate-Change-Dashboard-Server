@@ -1,13 +1,13 @@
+import { ObjectId } from "mongodb";
 import mongoose from "mongoose";
 const ArticleContentSchema = new mongoose.Schema(
   {
-    articles_id: { type: String },
-    type: { type: String, default: 'article_content' }, 
-    base64: { type: String },
+    article_id: { type: ObjectId },
+    chartURL: { type: String },
     question: { type: String },
     rationale: { type: String },
     visualization: { type: String },
-    description: { type: String },
+    desc: { type: String },
     index: { type: Number },
   },
   {
