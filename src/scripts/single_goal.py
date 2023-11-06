@@ -1,24 +1,36 @@
 from lida import Manager, TextGenerationConfig, llm
-from lida.utils import plot_raster
 import sys
 import pandas as pd
+import io
+import json
 
-# df = pd.read_csv(sys.argv[1])
-# custom_goal = sys.argv[2]
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf8")
 
-# lida = Manager(
-#     text_gen=llm(provider="cohere", api_key="MR15LMwLvq4ez77b4Df0T8s5zMK3qbv2Nv3xhL5k")
-# )
-# textgen_config = TextGenerationConfig(n=1, temperature=0.1, use_cache=True)
 
-# summary = lida.summarize(data=df)
+class Goal:
+    def __init__(self, question, visualization, rationale, index):
+        self.question = question
+        self.visualization = visualization
+        self.rationale = rationale
+        self.index = index
 
-# goals = lida.goals(summary, n=5, persona=custom_goal)
 
-# charts = lida.visualize(
-#     summary=summary, goal=goals[0], library="seaborn", textgen_config=textgen_config
-# )
+df = pd.read_csv(sys.argv[1], encoding="utf-8-sig")
+custom_goal = sys.argv[2]
+key = sys.argv[3]
 
-# print(charts[0].raster)
-print(sys.argv[1])
-print(sys.argv[2])
+lida = Manager(text_gen=llm(provider="cohere", api_key=key))
+
+summary = lida.summarize(data=df)
+
+goals = lida.goals(summary, n=5, persona=custom_goal)
+
+charts = lida.visualize(
+    summary=summary,
+    goal=goals[0],
+    library="seaborn",
+    textgen_config=TextGenerationConfig,
+)
+if charts and charts[0].status is True:
+    print((charts[0].raster).encode("utf-8").decode("utf-8"))
+    print(json.dumps(goals[0].__dict__))

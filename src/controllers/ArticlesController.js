@@ -8,7 +8,6 @@ import ArticleContent from "../app/models/Articlescontents.js";
 export const getArticles = async (req, res) => {
   const page = parseInt(req.query.page) || 1; 
   const perPage = 4;
-
   try {
     const articles = await Article.find()
       .skip((page - 1) * perPage)
@@ -41,8 +40,6 @@ export const getArticleDetail = async (req, res) => {
   const result = await detailCollection.find({ articles_id: new ObjectId(id) }).toArray();
   res.json(result);
 };
-
-
  export async function insert(req,res) {
 const ArticleID = new mongoose.Types.ObjectId();
 const dataToInsert = {

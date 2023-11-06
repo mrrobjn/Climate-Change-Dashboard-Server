@@ -6,7 +6,7 @@ const Schema = mongoose.Schema
         title: { type: String },
         img_url: { type: String },
         date_created: { type: Date, default: Date.now },
-        view: { type: Number },
+        view: { type: Number ,default:0 },
       //  author_id: { type: String },
       },{
         timestamps: true,
