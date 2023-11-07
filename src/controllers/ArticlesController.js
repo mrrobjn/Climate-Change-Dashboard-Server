@@ -46,18 +46,20 @@ export const getArticleDetail = async (req, res) => {
 };
 export async function insert(req, res) {
   const ArticleID = new mongoose.Types.ObjectId();
+  
   const article = {
     articles_id: ArticleID,
     ...req.body,
   };
   const { contents } = req.body;
   const newArticle = new Article(article);
+  const articlesID = newArticle._id;
   newArticle
     .save()
-    .then((savedArticle) => {
+    .then(() => {
       contents.map((content, index) => {
         content.index = index;
-        content.article_id = savedArticle._id; // Set the foreign key here
+        content.article_id = articlesID; // Set the foreign key here
         const newArticleContent = new ArticleContent(content);
         newArticleContent
           .save()
@@ -80,33 +82,34 @@ export async function insert(req, res) {
     });
 }
 
-export async function Delete(req, res) {
-  const { id, type } = req.body;
+export async function deleteArticle(req, res) {
+   const articleId = req.body._id;
   try {
-    if (type === "articles") {
-      const articleDeleteResult = await Article.deleteOne({ _id: id });
-      const articleContentsDeleteResult = await ArticleContent.deleteMany({
-        articles_id: id,
-      });
-      if (articleDeleteResult.deletedCount > 0) {
-        res.json({ message: "Deletion of articles completed." });
-      } else {
-        res.json({ message: "No articles found for deletion." });
-      }
-    } else if (type === "article_content") {
-      const articleContentDeleteResult = await ArticleContent.deleteOne({
-        articles_id: id,
-      });
-      if (articleContentDeleteResult.deletedCount > 0) {
-        res.json({ message: "Deletion of articles_content completed." });
-      } else {
-        res.json({ message: "No articles_content found for deletion." });
-      }
+    await ArticleContent.deleteMany({article_id: articleId });
+    const result = await Article.deleteOne({ _id: articleId });
+    if (result.deletedCount > 0) {
+      res.json({ message: 'deletion Article completed.' });
     } else {
-      res.json({ message: "Invalid type parameter." });
+      res.json({message: error });
     }
   } catch (error) {
     console.error(error);
-    res.json({ message: error });
+    res.json({message: error });
   }
 }
+
+export async function deleteArticleContent(req, res) {
+  const articleId = req.body._id;
+  try {
+     const result= await ArticleContent.deleteOne({article_id: articleId });
+    if (result.deletedCount > 0) {
+      res.json({ message: 'delete ArticleContent completed.' });
+    } else {
+      res.json({message: error });
+    }
+  } catch (error) {
+    console.error(error);
+    res.json({message: error });
+  }
+}
+
