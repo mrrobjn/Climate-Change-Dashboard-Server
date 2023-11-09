@@ -21,7 +21,7 @@ edited_charts = lida.edit(
     summary=summary,
     instructions=instructions,
     textgen_config=TextGenerationConfig,
-    library="seaborn"
+    library="matplotlib"
 )
 
 if edited_charts and edited_charts[0].status is True:

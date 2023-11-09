@@ -16,11 +16,16 @@ class Goal:
 df = pd.read_csv(sys.argv[1], encoding="utf-8")
 key = sys.argv[2]
 
-lida = Manager(text_gen=llm(provider="cohere", api_key=key))
+text_gen=llm(provider="cohere", api_key=key)
 
-summary = lida.summarize(data=df)
+lida = Manager(text_gen=text_gen)
 
-goals = lida.goals(summary, n=3)
+textgen_config = TextGenerationConfig(n=1, temperature=0.5, model="gpt-3.5-turbo-0301", use_cache=True)
+
+
+summary = lida.summarize(data=df,textgen_config=textgen_config)
+
+goals = lida.goals(summary, n=5)
 
 
 print(json.dumps(summary).encode("utf-8").decode("utf-8"))
