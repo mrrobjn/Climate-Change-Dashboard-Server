@@ -7,11 +7,11 @@ import ArticleContent from "../app/models/Articlescontents.js";
 
 export const getArticles = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
-  const perPage = 4;
+  const limit = parseInt(req.query.limit) || 4;
   try {
     const articles = await Article.find()
-      .skip((page - 1) * perPage)
-      .limit(perPage)
+      .skip((page - 1) * limit)
+      .limit(limit)
       .exec();
 
     res.status(200).json(articles);
@@ -80,33 +80,18 @@ export async function insert(req, res) {
     });
 }
 
-export async function Delete(req, res) {
-  const { id, type } = req.body;
-  try {
-    if (type === "articles") {
-      const articleDeleteResult = await Article.deleteOne({ _id: id });
-      const articleContentsDeleteResult = await ArticleContent.deleteMany({
-        articles_id: id,
-      });
-      if (articleDeleteResult.deletedCount > 0) {
-        res.json({ message: "Deletion of articles completed." });
-      } else {
-        res.json({ message: "No articles found for deletion." });
-      }
-    } else if (type === "article_content") {
-      const articleContentDeleteResult = await ArticleContent.deleteOne({
-        articles_id: id,
-      });
-      if (articleContentDeleteResult.deletedCount > 0) {
-        res.json({ message: "Deletion of articles_content completed." });
-      } else {
-        res.json({ message: "No articles_content found for deletion." });
-      }
-    } else {
-      res.json({ message: "Invalid type parameter." });
-    }
-  } catch (error) {
-    console.error(error);
-    res.json({ message: error });
-  }
+export async function deleteArticle(req, res) {
+  const articleId = req.body._id;
+ try {
+   await ArticleContent.deleteMany({article_id: articleId });
+   const result = await Article.deleteOne({ _id: articleId });
+   if (result.deletedCount > 0) {
+     res.json({ message: 'deletion Article completed.' });
+   } else {
+     res.json({message: error });
+   }
+ } catch (error) {
+   console.error(error);
+   res.json({message: error });
+ }
 }
