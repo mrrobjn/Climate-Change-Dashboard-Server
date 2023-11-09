@@ -8,18 +8,28 @@ import ArticleContent from "../app/models/Articlescontents.js";
 export const getArticles = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 4;
+  const searchQuery = req.query.search || '';
+  const sortField = req.query.field || 'createdAt'; // default sort field is 'createdAt'
+  const sortOrder = req.query.order === 'desc' ? -1 : 1; // default sort order is ascending
+
   try {
-    const articles = await Article.find()
+    const articles = await Article.find({ title: { $regex: searchQuery, $options: 'i' } })
+      .sort({ [sortField]: sortOrder })
       .skip((page - 1) * limit)
       .limit(limit)
       .exec();
 
-    res.status(200).json(articles);
+    const totalArticles = await Article.countDocuments({ title: { $regex: searchQuery, $options: 'i' } });
+    const totalPages = Math.ceil(totalArticles / limit);
+
+    res.status(200).json({ articles, totalPages });
   } catch (error) {
     console.error(error);
     res.status(500).json({ ERR: error });
   }
 };
+
+
 export const getSingleArticle = async (req, res) => {
   const { id } = req.query;
   const client = await connectToDatabase();
