@@ -1,6 +1,10 @@
 from lida import Manager, llm, TextGenerationConfig
 import sys
 import pandas as pd
+import io
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf8")
+
 
 df = pd.read_csv(sys.argv[1])
 custom_goal = sys.argv[2]

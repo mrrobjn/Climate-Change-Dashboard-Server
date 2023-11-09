@@ -3,6 +3,9 @@ from lida.utils import plot_raster
 import sys
 import pandas as pd
 import json
+import io
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf8")
 
 
 class Goal:
