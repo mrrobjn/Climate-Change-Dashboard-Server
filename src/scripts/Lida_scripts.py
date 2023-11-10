@@ -28,7 +28,7 @@ textgen_config = TextGenerationConfig(n=1, temperature=0.5, model="gpt-3.5-turbo
 
 summary = lida.summarize(data=df,textgen_config=textgen_config)
 
-goals = lida.goals(summary, n=5)
+goals = lida.goals(summary, n=10)
 
 
 print(json.dumps(summary).encode("utf-8").decode("utf-8"))

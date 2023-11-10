@@ -8,18 +8,22 @@ import ArticleContent from "../app/models/Articlescontents.js";
 export const getArticles = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 4;
-  const searchQuery = req.query.search || '';
-  const sortField = req.query.field || 'createdAt'; // default sort field is 'createdAt'
-  const sortOrder = req.query.order === 'desc' ? -1 : 1; // default sort order is ascending
+  const searchQuery = req.query.search || "";
+  const sortField = req.query.field || "createdAt"; // default sort field is 'createdAt'
+  const sortOrder = req.query.order === "desc" ? -1 : 1; // default sort order is ascending
 
   try {
-    const articles = await Article.find({ title: { $regex: searchQuery, $options: 'i' } })
+    const articles = await Article.find({
+      title: { $regex: searchQuery, $options: "i" },
+    })
       .sort({ [sortField]: sortOrder })
       .skip((page - 1) * limit)
       .limit(limit)
       .exec();
 
-    const totalArticles = await Article.countDocuments({ title: { $regex: searchQuery, $options: 'i' } });
+    const totalArticles = await Article.countDocuments({
+      title: { $regex: searchQuery, $options: "i" },
+    });
     const totalPages = Math.ceil(totalArticles / limit);
 
     res.status(200).json({ articles, totalPages });
@@ -28,7 +32,6 @@ export const getArticles = async (req, res) => {
     res.status(500).json({ ERR: error });
   }
 };
-
 
 export const getSingleArticle = async (req, res) => {
   const { id } = req.query;
@@ -92,16 +95,34 @@ export async function insert(req, res) {
 
 export async function deleteArticle(req, res) {
   const articleId = req.body._id;
- try {
-   await ArticleContent.deleteMany({article_id: articleId });
-   const result = await Article.deleteOne({ _id: articleId });
-   if (result.deletedCount > 0) {
-     res.json({ message: 'deletion Article completed.' });
-   } else {
-     res.json({message: error });
-   }
- } catch (error) {
-   console.error(error);
-   res.json({message: error });
- }
+  try {
+    await ArticleContent.deleteMany({ article_id: articleId });
+    const result = await Article.deleteOne({ _id: articleId });
+    if (result.deletedCount > 0) {
+      res.json({ message: "deletion Article completed." });
+    } else {
+      res.json({ message: error });
+    }
+  } catch (error) {
+    console.error(error);
+    res.json({ message: error });
+  }
 }
+export const increaseViewCount = async (req, res) => {
+  const { _id } = req.body;
+  const client = await connectToDatabase();
+  const db = client.db("CCD");
+
+  const articlesCollection = db.collection("articles");
+
+  const updateResult = await articlesCollection.updateOne(
+    { _id: new ObjectId(_id) },
+    { $inc: { view: 1 } }
+  );
+
+  if (updateResult.modifiedCount === 1) {
+    res.json({ message: "View count increased successfully" });
+  } else {
+    res.json({ message: "Failed to increase view count" });
+  }
+};

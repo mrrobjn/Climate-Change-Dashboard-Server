@@ -3,7 +3,8 @@ import { pythonConfig } from "../config/pythonConfig.js";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import path from "path";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
+import isBase64 from "../utils/isBase64.js";
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -29,16 +30,16 @@ export const uploadData = (req, res) => {
 export const postSingleGoal = (req, res) => {
   try {
     const { path, goal } = req.body;
-    PythonShell.run("single_goal.py", pythonConfig([path, goal,api_key])).then(
+    PythonShell.run("single_goal.py", pythonConfig([path, goal, api_key])).then(
       (results) => {
         let parsedGoal;
         try {
           parsedGoal = JSON.parse(results[1]);
+          const { question, rationale, visualization } = parsedGoal;
+          res.json({ base64: results[0], question, rationale, visualization });
         } catch (error) {
           return res.status(400).json({ error: "Invalid Goal format" });
         }
-        const { question, rationale, visualization } = parsedGoal;
-        res.json({ base64: results[0], question, rationale, visualization });
       }
     );
   } catch (error) {
@@ -51,9 +52,13 @@ export const modifyGoal = (req, res) => {
     const { path, goal, instruction } = req.body;
     PythonShell.run(
       "goal_modify.py",
-      pythonConfig([path, goal, instruction,api_key])
+      pythonConfig([path, goal, instruction, api_key])
     ).then((results) => {
-      res.json(results[0]);
+      if (isBase64(results[0])) {
+        res.json(results[0]);
+      } else {
+        res.status(400).json({ message: "Something wrong, please try again" });
+      }
     });
   } catch (error) {
     res.json(error);
