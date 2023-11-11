@@ -27,7 +27,7 @@ export const crawHistorical = async (req, res) => {
     const totalCountries = countries.length;
     let completedCountries = 0;
 
-    const historicalStartDate = "2023-07-29";
+    const historicalStartDate = "2022-07-29";
     const historicalEndDate = "2023-10-07";
 
     for (let country of countries) {
@@ -42,8 +42,19 @@ export const crawHistorical = async (req, res) => {
           );
 
           if (data.latitude) {
+            data.hourly.time = data.hourly.time.map((time) => new Date(time));
+            data.daily.time = data.daily.time.map((time) => new Date(time));
             await weatherCollection.insertOne({
-              ...parse(stringify(data)),
+              latitude: data.latitude,
+              longitude: data.longitude,
+              generationtime_ms: data.generationtime_ms,
+              timezone :data.timezone, 
+              timezone_abbreviation: data.timezone_abbreviation,
+              elevation: data.elevation,
+              hourly_units: data.hourly_units,
+              hourly: data.hourly,
+              daily_units: data.daily_units,
+              daily: data.daily,
               location: {
                 type: "Point",
                 coordinates: [data.longitude, data.latitude],
