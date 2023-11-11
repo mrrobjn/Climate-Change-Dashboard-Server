@@ -6,7 +6,7 @@ const ArticleSchema = new Schema(
     desc: { type: String },
     img_url: { type: String },
     view: { type: Number, default: 0 },
-    //  author_id: { type: String },
+    author_id: { type: String },
   },
   {
     timestamps: true,

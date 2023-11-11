@@ -28,7 +28,7 @@ goals = lida.goals(summary, n=5, persona=custom_goal)
 charts = lida.visualize(
     summary=summary,
     goal=goals[0],
-    library="seaborn",
+    library="matplotlib",
     textgen_config=TextGenerationConfig,
 )
 if charts and charts[0].status is True:
