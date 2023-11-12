@@ -21,15 +21,15 @@ export const crawForecast = async (req, res) => {
     const db = client.db("CCD");
 
     const countryCollection = db.collection("countries");
-    const weatherCollection = db.collection("forecast");
+    const weatherCollection = db.collection("fore-cast");
 
     //chỗ này format lại ngày tháng
-    const cDate = new Date(); //ddmmyyyy+giờ
-    const year = cDate.getFullYear();
-    const month = String(cDate.getMonth() + 1).padStart(2, "0");
-    const day = String(cDate.getDate()).padStart(2, "0");
-    const currentDate = `${year}-${month}-${day}`;
-
+    // const cDate = new Date(); //ddmmyyyy+giờ
+    // const year = cDate.getFullYear();
+    // const month = String(cDate.getMonth() + 1).padStart(2, "0");
+    // const day = String(cDate.getDate()).padStart(2, "0");
+    // const currentDate = `${year}-${month}-${day}`;
+    const currentDate = new Date();
     const countries = await countryCollection.find({}).toArray();
     const weather = await weatherCollection.find({}).toArray();
 
@@ -67,8 +67,19 @@ export const crawForecast = async (req, res) => {
               }
             }
           }
+          data.hourly.time = data.hourly.time.map((time) => new Date(time));
+          data.daily.time = data.daily.time.map((time) => new Date(time));
           await weatherCollection.insertOne({
-            ...parse(stringify(data)),
+            latitude: data.latitude,
+            longitude: data.longitude,
+            generationtime_ms: data.generationtime_ms,
+            timezone :data.timezone, 
+            timezone_abbreviation: data.timezone_abbreviation,
+            elevation: data.elevation,
+            hourly_units: data.hourly_units,
+            hourly: data.hourly,
+            daily_units: data.daily_units,
+            daily: data.daily,
             location: {
               type: "Point",
               coordinates: [data.longitude, data.latitude],

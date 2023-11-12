@@ -187,8 +187,16 @@ export const crawAirQuality = async (req, res) => {
             `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${country.latitude}&longitude=${country.longitude}&hourly=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,aerosol_optical_depth,dust,uv_index,uv_index_clear_sky,ammonia,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen&start_date=2022-07-29&end_date=2023-10-07`
           );
           if (data.latitude) {
+            data.hourly.time = data.hourly.time.map((time) => new Date(time));
             await db2.insertOne({
-              ...parse(stringify(data)),
+              latitude: data.latitude,
+              longitude: data.longitude,
+              generationtime_ms: data.generationtime_ms,
+              timezone :data.timezone, 
+              timezone_abbreviation: data.timezone_abbreviation,
+              elevation: data.elevation,
+              hourly_units: data.hourly_units,
+              hourly: data.hourly,
               location: {
                 type: "Point",
                 coordinates: [country.longitude, country.latitude],
