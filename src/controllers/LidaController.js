@@ -14,15 +14,17 @@ const api_key = process.env.COHERE_API_KEY;
 export const uploadData = (req, res) => {
   try {
     let data = path.join(__dirname, "../..", req.file.path);
-    PythonShell.run("Lida_scripts.py", pythonConfig([data, api_key])).then(
-      (results) => {
+    PythonShell.run("Lida_scripts.py", pythonConfig([data, api_key]))
+      .then((results) => {
         res.json({
           summary: JSON.parse(results[0]),
           goals: JSON.parse(results[1]),
           path: data,
         });
-      }
-    );
+      })
+      .catch((error) => {
+        res.status(400).json({ message: "Invalid file format", error });
+      });
   } catch (error) {
     res.json(error);
   }
@@ -38,7 +40,13 @@ export const postSingleGoal = (req, res) => {
           const { question, rationale, visualization } = parsedGoal;
           res.json({ base64: results[0], question, rationale, visualization });
         } catch (error) {
-          return res.status(400).json({ error: "Invalid Goal format" });
+          return res
+            .status(400)
+            .json({
+              message: "Invalid Goal format",
+              goal: results[1],
+              base64: results[0],
+            });
         }
       }
     );

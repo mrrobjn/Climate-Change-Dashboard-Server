@@ -21,9 +21,13 @@ key = sys.argv[3]
 
 lida = Manager(text_gen=llm(provider="cohere", api_key=key))
 
-summary = lida.summarize(data=df)
+textgen_config = TextGenerationConfig(
+    n=1, temperature=0.5, model="gpt-3.5-turbo-0301", use_cache=True
+)
 
-goals = lida.goals(summary, n=5, persona=custom_goal)
+summary = lida.summarize(data=df,textgen_config=textgen_config)
+
+goals = lida.goals(summary, n=1, persona=custom_goal)
 
 charts = lida.visualize(
     summary=summary,
