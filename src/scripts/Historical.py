@@ -96,26 +96,37 @@ data = json.loads(json_data, object_hook=json_util.object_hook)
 
 hourly_components = [key for key in data["hourly"] if key != "time"]
 daily_components = [key for key in data["daily"] if key != "time"]
+plot_data = []
 
-# Vẽ biểu đồ cho hourly và daily
-plt.figure(figsize=(15, 8))
-
-# Hàng giờ
+# Plot hourly components
+plt.figure(figsize=(10, 6))
 for component in hourly_components:
-    plt.plot(data["hourly"]["time"], data["hourly"][component], label=f'H-{component}', marker='o')
+    plt.plot(data["hourly"]["time"], data["hourly"][component], label=f"Hourly {component}", marker='o')
 
-# Hàng ngày
+    # Add data to the plot_data list
+    plot_data.append({
+        "x": [row.strftime("%Y-%m-%d %H:%M:%S") for row in data["hourly"]["time"]],
+        "y": data["hourly"][component],
+        "type": "scatter",
+        "name": f"Hourly {component}"
+    })
+
+# Plot daily components
 for component in daily_components:
-    plt.plot(data["daily"]["time"], data["daily"][component], label=f'D-{component}', marker='o')
+    plt.plot(data["daily"]["time"], data["daily"][component], label=f"Daily {component}", marker='o')
 
-plt.title(' Historical Air Quality Components Over Time')
+    # Add data to the plot_data list
+    plot_data.append({
+        "x": [row.strftime("%Y-%m-%d") for row in data["daily"]["time"]],
+        "y": data["daily"][component],
+        "type": "scatter",
+        "name": f"Daily {component}"
+    })
+
 plt.xlabel('Time')
 plt.ylabel('Concentration')
+plt.title('Air Quality Components Over Time')
 plt.legend()
 plt.xticks(rotation=45)
-
 plt.tight_layout()
-
-# Hiển thị biểu đồ
-plt.show()
-
+print(json.dumps(plot_data))

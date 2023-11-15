@@ -1,5 +1,4 @@
 from datetime import datetime
-from flask import Flask, request, jsonify
 import pymongo
 from bson import ObjectId, json_util
 from pprint import pprint
@@ -9,7 +8,6 @@ import json
 from bson import json_util
 import sys
 
-app = Flask(__name__)
 
 # Kết nối đến MongoDB
 myclient = pymongo.MongoClient("mongodb://localhost:27017/CCD")
@@ -72,13 +70,20 @@ json_data = json_util.dumps(result)
 data = json.loads(json_data, object_hook=json_util.object_hook)
 components = [key for key in data["hourly"] if key != "time"]
 
-# Chuyển đổi thành chuỗi trước khi vẽ biểu đồ
-json_str = json_data
+plot_data = []
 
 # Vẽ biểu đồ cho từng component
 plt.figure(figsize=(10, 6))
 for component in components:
     plt.plot(data["hourly"]["time"], data["hourly"][component], label=component, marker='o')
+
+    # Add data to the plot_data list
+    plot_data.append({
+        "x": [row.strftime("%Y-%m-%d %H:%M:%S") for row in data["hourly"]["time"]],
+        "y": data["hourly"][component],
+        "type": "scatter",
+        "name": component
+    })
 
 plt.xlabel('Time')
 plt.ylabel('Concentration')
@@ -87,7 +92,5 @@ plt.legend()
 plt.xticks(rotation=45)
 plt.tight_layout()
 
-# Hiển thị biểu đồ
-plt.show()
-
-    
+# Print the plot data in JSON format
+print(json.dumps(plot_data))
