@@ -3,7 +3,7 @@ import {
   getAirQuality,
   crawAirQuality,
   downloadAirQuality,
-} from "../controllers/AirQualityController.js";
+} from "../app/controllers/AirQualityController.js";
 
 const router = express.Router();
 

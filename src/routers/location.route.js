@@ -1,5 +1,5 @@
 import express from 'express'
-import { crawLocation, getLocation} from '../controllers/LocationController.js'
+import { crawLocation, getLocation} from '../app/controllers/LocationController.js'
 
 const router = express.Router()
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { uploadData, postSingleGoal,modifyGoal } from "../controllers/LidaController.js";
+import { uploadData, postSingleGoal,modifyGoal } from "../app/controllers/LidaController.js";
 import multer from "multer";
 
 const router = express.Router();

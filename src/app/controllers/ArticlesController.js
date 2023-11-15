@@ -1,9 +1,9 @@
 import { ObjectId } from "mongodb";
-import { connectToDatabase } from "../db/index.js";
+import { connectToDatabase } from "../../db/index.js";
 
 import mongoose from "mongoose";
-import Article from "../app/models/Articles.js";
-import ArticleContent from "../app/models/Articlescontents.js";
+import Article from "../../app/models/Articles.js";
+import ArticleContent from "../../app/models/Articlescontents.js";
 
 export const getArticles = async (req, res) => {
   const page = parseInt(req.query.page) || 1;

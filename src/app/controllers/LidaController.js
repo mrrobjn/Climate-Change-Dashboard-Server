@@ -1,10 +1,10 @@
 import { PythonShell } from "python-shell";
-import { pythonConfig } from "../config/pythonConfig.js";
+import { pythonConfig } from "../../config/pythonConfig.js";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import path from "path";
 import dotenv from "dotenv";
-import isBase64 from "../utils/isBase64.js";
+import isBase64 from "../../utils/isBase64.js";
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);

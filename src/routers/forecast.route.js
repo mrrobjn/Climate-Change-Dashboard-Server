@@ -1,6 +1,6 @@
 import express from 'express'
 
-import { getForecast,  crawForecast } from '../controllers/ForeCastController.js'
+import { getForecast,  crawForecast } from '../app/controllers/ForeCastController.js'
 
 const router = express.Router()
 

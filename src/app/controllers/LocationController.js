@@ -1,6 +1,6 @@
 import chalk from "chalk";
-import { connectToDatabase } from "../db/index.js";
-import { fetchAPI } from "../api/fetchApi.js";
+import { connectToDatabase } from "../../db/index.js";
+import { fetchAPI } from "../../api/fetchApi.js";
 export const getLocation = async (req, res) => {
     const { name } = req.query;
     const client = await connectToDatabase();

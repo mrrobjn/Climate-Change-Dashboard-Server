@@ -1,14 +1,8 @@
-import { stringify, parse } from "flatted";
-import { connectToDatabase } from "../db/index.js";
-import { fetchAPI } from "../api/fetchApi.js";
+import { connectToDatabase } from "../../db/index.js";
+import { fetchAPI } from "../../api/fetchApi.js";
 import chalk from "chalk";
-import { convertToLocalTime } from "../utils/convertDateTime.js";
-import moment from "moment-timezone";
 import { PythonShell } from "python-shell";
-import path from "path";
-import url from 'url';
-import { pythonConfig } from "../config/pythonConfig.js";
-import { error } from "console";
+import { pythonConfig } from "../../config/pythonConfig.js";
 
 export const getForecast = async (req, res) => {
   let { latitude, longitude, hourly, daily } = req.query;

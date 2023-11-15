@@ -1,14 +1,12 @@
-import { stringify, parse } from "flatted";
-import { connectToDatabase } from "../db/index.js";
-import { fetchAPI } from "../api/fetchApi.js";
+import { connectToDatabase } from "../../db/index.js";
+import { fetchAPI } from "../../api/fetchApi.js";
 import chalk from "chalk";
-import { convertToLocalTime } from "../utils/convertDateTime.js";
+import { convertToLocalTime } from "../../utils/convertDateTime.js";
 import moment from "moment-timezone";
 import { PythonShell } from "python-shell";
 import path from "path";
 import url from 'url';
-import { pythonConfig } from "../config/pythonConfig.js";
-import { error } from "console";
+import { pythonConfig } from "../../config/pythonConfig.js";
 
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
