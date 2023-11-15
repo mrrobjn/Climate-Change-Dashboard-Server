@@ -13,7 +13,7 @@ const api_key = process.env.COHERE_API_KEY;
 
 export const uploadData = (req, res) => {
   try {
-    let data = path.join(__dirname, "../..", req.file.path);
+    let data = path.join(__dirname, "../../..", req.file.path);
     PythonShell.run("Lida_scripts.py", pythonConfig([data, api_key]))
       .then((results) => {
         res.json({
