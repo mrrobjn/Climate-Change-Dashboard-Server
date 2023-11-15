@@ -8,109 +8,18 @@ import { PythonShell } from "python-shell";
 import path from "path";
 import url from 'url';
 import { pythonConfig } from "../config/pythonConfig.js";
+import { error } from "console";
 
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export const getAirQuality = async (req, res) => {
   let { latitude, longitude, hourly, start_date, end_date } = req.query;
-
-  latitude = parseFloat(latitude);
-  longitude = parseFloat(longitude);
-  let startDate = new Date(moment(start_date).local().format());
-  let endDate = new Date(moment(end_date).local().format());
-  const client = await connectToDatabase();
-  const db = client.db("CCD");
-
-  const collection = db.collection("air-quality");
-
-  // collection.createIndex({ location: "2dsphere" });
-  const query = {
-    location: {
-      $near: {
-        $geometry: {
-          type: "Point",
-          coordinates: [longitude, latitude],
-        },
-      },
-    },
-  };
-
-  const result = await collection.findOne(query);
-
-  const hourlyArray = hourly.split(",");
-
-  const hourly_units = {};
-
-  for (const unit of hourlyArray) {
-    if (result.hourly_units.hasOwnProperty(unit)) {
-      hourly_units[unit] = result.hourly_units[unit];
-    }
-  }
-
-  let newTimeArray = [];
-  // Check
-  if ((endDate - startDate) / (24 * 60 * 60 * 1000) > 10) {
-    let dailyData = {};
-    for (const unit of hourlyArray) {
-      dailyData[unit] = [];
-    }
-    let currentDate = startDate;
-    while (currentDate <= endDate) {
-      for (const unit of hourlyArray) {
-        if (result.hourly.hasOwnProperty(unit)) {
-          let dailyTotal = 0;
-          let count = 0;
-          for (let i = 0; i < result.hourly.time.length; i++) {
-            let currentTime = new Date(result.hourly.time[i]);
-            if (
-              currentTime >= currentDate &&
-              currentTime <
-                new Date(currentDate.getTime() + 24 * 60 * 60 * 1000)
-            ) {
-              dailyTotal += result.hourly[unit][i];
-              count++;
-            }
-          }
-          if (count > 0) {
-            dailyData[unit].push(dailyTotal / count);
-          }
-        }
-      }
-      newTimeArray.push(new Date(currentDate.getTime()));
-      currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
-    }
-    let options = pythonConfig([convertToLocalTime(newTimeArray),JSON.stringify(dailyData),hourlyArray])
-    PythonShell.run('air_quality.py', options).then(results=>{
-      res.json(results[0]);
-    });
-  }
-  // Check
-  else {
-    const hourlyData = {};
-    for (const unit of hourlyArray) {
-      if (result.hourly.hasOwnProperty(unit)) {
-        let filteredData = [];
-        for (let i = 0; i < result.hourly.time.length; i++) {
-          let currentTime = new Date(result.hourly.time[i]);
-          if (currentTime >= startDate && currentTime <= endDate) {
-            filteredData.push(result.hourly[unit][i]);
-          }
-        }
-        hourlyData[unit] = filteredData;
-      }
-    }
-    for (let i = 0; i < result.hourly.time.length; i++) {
-      let currentTime = new Date(result.hourly.time[i]);
-      if (currentTime >= startDate && currentTime <= endDate) {
-        newTimeArray.push(currentTime);
-      }
-    }
-    let options = pythonConfig([convertToLocalTime(newTimeArray),JSON.stringify(hourlyData),hourlyArray])
-    PythonShell.run('air_quality.py', options).then(results=>{
-      res.json(results[0]);
-    });
-  }
+  let options = pythonConfig([latitude, longitude, hourly, start_date, end_date])
+  PythonShell.run('AirQuality.py', options).then(results=>{
+    res.json(results[0]);
+  });
 };
+
 export const downloadAirQuality = async(req,res)=>{
   let { latitude, longitude, hourly, start_date, end_date } = req.query;
 

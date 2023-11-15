@@ -1,18 +1,21 @@
+import { stringify, parse } from "flatted";
+import { connectToDatabase } from "../db/index.js";
 import { fetchAPI } from "../api/fetchApi.js";
 import chalk from "chalk";
-import { connectToDatabase } from "../db/index.js";
-import { stringify, parse } from "flatted";
-export const getForecast = async (req, res) => {
-  const { latitude, longitude, hourly, daily } = req.query;
-  let apiUrl = "";
-  if (daily) {
-    apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=${hourly}&daily=${daily}&timezone=Asia%2FBangkok`;
-  } else {
-    apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=${hourly}&timezone=Asia%2FBangkok`;
-  }
-  const result = await fetchAPI(apiUrl);
+import { convertToLocalTime } from "../utils/convertDateTime.js";
+import moment from "moment-timezone";
+import { PythonShell } from "python-shell";
+import path from "path";
+import url from 'url';
+import { pythonConfig } from "../config/pythonConfig.js";
+import { error } from "console";
 
-  res.json(result);
+export const getForecast = async (req, res) => {
+  let { latitude, longitude, hourly, daily } = req.query;
+  let options = pythonConfig([latitude, longitude, hourly, daily])
+  PythonShell.run('Forecast.py', options).then(results=>{
+    res.json(results[0]);
+  });
 };
 
 export const crawForecast = async (req, res) => {
@@ -21,14 +24,8 @@ export const crawForecast = async (req, res) => {
     const db = client.db("CCD");
 
     const countryCollection = db.collection("countries");
-    const weatherCollection = db.collection("fore-cast");
+    const weatherCollection = db.collection("forecast");
 
-    //chỗ này format lại ngày tháng
-    // const cDate = new Date(); //ddmmyyyy+giờ
-    // const year = cDate.getFullYear();
-    // const month = String(cDate.getMonth() + 1).padStart(2, "0");
-    // const day = String(cDate.getDate()).padStart(2, "0");
-    // const currentDate = `${year}-${month}-${day}`;
     const currentDate = new Date();
     const countries = await countryCollection.find({}).toArray();
     const weather = await weatherCollection.find({}).toArray();

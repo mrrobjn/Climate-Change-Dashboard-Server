@@ -1,18 +1,22 @@
-import chalk from "chalk";
-import { fetchAPI } from "../api/fetchApi.js";
-import { connectToDatabase } from "../db/index.js";
 import { stringify, parse } from "flatted";
-export const getHistorical = async (req, res) => {
-  const { latitude, longitude, hourly, startDate, endDate, daily } = req.query;
-  let apiUrl = "";
-  if (daily) {
-    apiUrl = `https://archive-api.open-meteo.com/v1/archive?latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}&hourly=${hourly}&daily=${daily}&timezone=Asia%2FBangkok`;
-  } else {
-    apiUrl = `https://archive-api.open-meteo.com/v1/archive?latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}&hourly=${hourly}`;
-  }
-  const result = await fetchAPI(apiUrl);
+import { connectToDatabase } from "../db/index.js";
+import { fetchAPI } from "../api/fetchApi.js";
+import chalk from "chalk";
+import { convertToLocalTime } from "../utils/convertDateTime.js";
+import moment from "moment-timezone";
+import { PythonShell } from "python-shell";
+import path from "path";
+import url from 'url';
+import { pythonConfig } from "../config/pythonConfig.js";
+import { error } from "console";
 
-  res.json(result);
+
+export const getHistorical = async (req, res) => {
+  let { latitude, longitude, hourly, daily , start_date, end_date} = req.query;
+  let options = pythonConfig([latitude, longitude, hourly, daily , start_date, end_date])
+  PythonShell.run('Historical.py', options).then(results=>{
+    res.json(results[0]);
+  });
 };
 
 export const crawHistorical = async (req, res) => {
