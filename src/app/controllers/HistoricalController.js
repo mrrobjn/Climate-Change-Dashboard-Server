@@ -10,7 +10,7 @@ export const getHistorical = async (req, res) => {
   chart_type = chart_type || "line";
   let options = pythonConfig([latitude, longitude, hourly, daily , start_date, end_date,chart_type])
   PythonShell.run('Historical.py', options).then(results=>{
-    res.json(results[0]);
+    res.json(JSON.parse(results[0]));
   });
 };
 

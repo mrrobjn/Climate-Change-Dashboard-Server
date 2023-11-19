@@ -18,7 +18,7 @@ export const getAirQuality = async (req, res) => {
 } else {
     let options = pythonConfig([latitude, longitude, hourly, start_date, end_date,chart_type])
     PythonShell.run('AirQuality.py', options).then(results=>{
-      res.json(results[0]);
+      res.json(JSON.parse(results[0]));
     }).catch(error => {
       res.status(400).send({ error });
     });

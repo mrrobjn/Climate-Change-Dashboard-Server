@@ -9,7 +9,7 @@ export const getForecast = async (req, res) => {
   chart_type = chart_type || "line";
   let options = pythonConfig([latitude, longitude, hourly, daily, chart_type])
   PythonShell.run('Forecast.py', options).then(results=>{
-    res.json(results[0]);
+    res.json(JSON.parse(results[0]));
   });
 };
 
