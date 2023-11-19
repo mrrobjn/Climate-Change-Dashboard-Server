@@ -1,18 +1,16 @@
 from datetime import datetime
 import pymongo
-from bson import ObjectId, json_util
-from pprint import pprint
-import matplotlib.pyplot as plt
-from datetime import datetime
-import json
 from bson import json_util
+import matplotlib.pyplot as plt
+import json
 import sys
-
 
 # Kết nối đến MongoDB
 myclient = pymongo.MongoClient("mongodb://localhost:27017/CCD")
 
 mycollection = myclient.CCD["air-quality"]
+
+mycollection.create_index([("location", "2dsphere")])
 
 latitude = float(sys.argv[1])
 longitude = float(sys.argv[2])
@@ -23,22 +21,29 @@ start_date = sys.argv[4]
 end_date = sys.argv[5]
 
 start_datetime = datetime.strptime(f"{start_date} 00:00:00", "%Y-%m-%d %H:%M:%S")
-
 end_datetime = datetime.strptime(f"{end_date} 23:00:00", "%Y-%m-%d %H:%M:%S")
-min_latitude =latitude-0.5
-max_latitude =latitude +0.5
-min_longitude = longitude -0.5
-max_longitude = longitude+0.5
+
 query = {
-    "$and": [
-        {"latitude": {"$gte": min_latitude, "$lte": max_latitude}},
-        {"longitude": {"$gte": min_longitude, "$lte": max_longitude}},
+    "location": {
+        "$near": {
+            "$geometry": {
+                "type": "Point",
+                "coordinates": [longitude, latitude]
+            },
+        }
+    },
+        "$or": [
+        {"hourly.time": {"$gte": start_datetime, "$lte": end_datetime}},
     ]
+    
 }
+
 data = mycollection.find(query)
-
 result_data = [record for record in data]
-
+if not result_data:
+    print("No data found for the specified location and date range.")
+    sys.exit(1)
+    
 tmp = []
 time_positions = []
 
@@ -70,22 +75,43 @@ json_data = json_util.dumps(result)
 data = json.loads(json_data, object_hook=json_util.object_hook)
 components = [key for key in data["hourly"] if key != "time"]
 
-# Chuyển đổi thành chuỗi trước khi vẽ biểu đồ
-json_str = json_data
+chart_type = sys.argv[6] 
 
-# Vẽ biểu đồ cho từng component
+# Check if chart_type is valid
+valid_chart_types = ["line", "bar"]
+if chart_type and chart_type not in valid_chart_types:
+    print(f"Invalid chart type. Supported types: {', '.join(valid_chart_types)}.")
+    sys.exit(1)
+
+# Define a dictionary to map chart types to plotting functions
+chart_types_mapping = {
+    "line": plt.plot,
+    "bar": plt.bar,
+
+}
+
+plot_function = chart_types_mapping.get(chart_type, plt.plot)
+
+component_units = {c: result_data[0]["hourly_units"][c] for c in component}
+
 plt.figure(figsize=(10, 6))
-for component in components:
-    plt.plot(data["hourly"]["time"], data["hourly"][component], label=component, marker='o')
+plot_data = []
 
-plt.xlabel('Time')
-plt.ylabel('Concentration')
-plt.title('Air Quality Components Over Time')
+for component in components:
+    plot_function = chart_types_mapping.get(chart_type, plt.plot)
+    
+    plot_function(data["hourly"]["time"], data["hourly"][component], label=f"{component} ({component_units[component]})")
+
+    plot_data.append({
+        "x": [row.strftime("%Y-%m-%d %H:%M:%S") for row in data["hourly"]["time"]],
+        "y": data["hourly"][component],
+        "type": chart_type,
+        "name": f"{component} ({component_units[component]})"
+    })
+
+
 plt.legend()
 plt.xticks(rotation=45)
 plt.tight_layout()
 
-# Hiển thị biểu đồ
-plt.show()
-
-    
+print(json.dumps(plot_data))

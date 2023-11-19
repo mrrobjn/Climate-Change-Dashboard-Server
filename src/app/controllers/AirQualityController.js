@@ -11,13 +11,19 @@ import { pythonConfig } from "../../config/pythonConfig.js";
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export const getAirQuality = async (req, res) => {
-  let { latitude, longitude, hourly, start_date, end_date } = req.query;
-  let options = pythonConfig([latitude, longitude, hourly, start_date, end_date])
-  PythonShell.run('AirQuality.py', options).then(results=>{
-    res.json(results[0]);
-  });
-};
-
+  let { latitude, longitude, hourly, start_date, end_date,chart_type } = req.query;
+  chart_type = chart_type || "line";
+  if (!latitude || !longitude || !hourly || !start_date || !end_date) {
+    res.status(400).send("Please complete all information. Do not leave any fields blank.");
+} else {
+    let options = pythonConfig([latitude, longitude, hourly, start_date, end_date,chart_type])
+    PythonShell.run('AirQuality.py', options).then(results=>{
+      res.json(results[0]);
+    }).catch(error => {
+      res.status(400).send({ error });
+    });
+  };
+}
 export const downloadAirQuality = async(req,res)=>{
   let { latitude, longitude, hourly, start_date, end_date } = req.query;
 
