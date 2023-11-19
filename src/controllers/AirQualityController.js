@@ -1,24 +1,26 @@
-import { stringify, parse } from "flatted";
 import { connectToDatabase } from "../db/index.js";
 import { fetchAPI } from "../api/fetchApi.js";
 import chalk from "chalk";
 import { convertToLocalTime } from "../utils/convertDateTime.js";
 import moment from "moment-timezone";
 import { PythonShell } from "python-shell";
-import path from "path";
-import url from 'url';
 import { pythonConfig } from "../config/pythonConfig.js";
-import { error } from "console";
 
-const __filename = url.fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 export const getAirQuality = async (req, res) => {
-  let { latitude, longitude, hourly, start_date, end_date } = req.query;
-  let options = pythonConfig([latitude, longitude, hourly, start_date, end_date])
-  PythonShell.run('AirQuality.py', options).then(results=>{
-    res.json(results[0]);
-  });
-};
+  let { latitude, longitude, hourly, start_date, end_date,chart_type } = req.query;
+  chart_type = chart_type || "line";
+  if (!latitude || !longitude || !hourly || !start_date || !end_date) {
+    res.status(400).send("Please complete all information. Do not leave any fields blank.");
+} else {
+    let options = pythonConfig([latitude, longitude, hourly, start_date, end_date,chart_type])
+    PythonShell.run('AirQuality.py', options).then(results=>{
+      res.json(results[0]);
+    }).catch(error => {
+      res.status(400).send({ error });
+    });
+  };
+}
+
 
 export const downloadAirQuality = async(req,res)=>{
   let { latitude, longitude, hourly, start_date, end_date } = req.query;
@@ -85,7 +87,6 @@ export const crawAirQuality = async (req, res) => {
     const countries = await db1.find({}).toArray();
     const totalCountries = countries.length;
     let completedCountries = 0;
-
     for (let country of countries) {
       const existingDoc = await db2.findOne({
         "location.coordinates": [country.longitude, country.latitude],

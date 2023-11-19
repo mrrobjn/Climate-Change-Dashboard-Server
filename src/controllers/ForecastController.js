@@ -11,8 +11,9 @@ import { pythonConfig } from "../config/pythonConfig.js";
 import { error } from "console";
 
 export const getForecast = async (req, res) => {
-  let { latitude, longitude, hourly, daily } = req.query;
-  let options = pythonConfig([latitude, longitude, hourly, daily])
+  let { latitude, longitude, hourly, daily, chart_type} = req.query;
+  chart_type = chart_type || "line";
+  let options = pythonConfig([latitude, longitude, hourly, daily, chart_type])
   PythonShell.run('Forecast.py', options).then(results=>{
     res.json(results[0]);
   });

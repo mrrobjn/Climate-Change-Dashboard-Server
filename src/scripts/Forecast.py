@@ -58,38 +58,50 @@ for record in result_data:
 json_data = json_util.dumps(result)
 
 data = json.loads(json_data, object_hook=json_util.object_hook)
-# Assuming you have 'data', 'hourly_components', 'daily_components' defined somewhere
 
+chart_type = sys.argv[5] 
+
+# Check if chart_type is valid
+valid_chart_types = ["line","bar"]
+if chart_type and chart_type not in valid_chart_types:
+    print(f"Invalid chart type. Supported types: {', '.join(valid_chart_types)}.")
+    sys.exit(1)
+
+# Define a dictionary to map chart types to plotting functions
+chart_types_mapping = {
+    "line": plt.plot,
+    "bar": plt.bar,
+}
+
+plot_function = chart_types_mapping.get(chart_type, plt.plot)
+component_unitsH = {c: result_data[0]["hourly_units"][c] for c in componentH}
+component_unitsD = {c: result_data[0]["daily_units"][c] for c in componentD}
+
+plt.figure(figsize=(10, 6))
 plot_data = []
 
-# Plot hourly components
-plt.figure(figsize=(10, 6))
 for component in componentH:
-    plt.plot(data["hourly"]["time"], data["hourly"][component], label=f"Hourly {component}", marker='o')
-
-    # Add data to the plot_data list
+    plot_function = chart_types_mapping.get(chart_type, plt.plot)
+    plot_function(data["hourly"]["time"], data["hourly"][component], label=f"hourly {component} ({component_unitsH[component]})")
     plot_data.append({
         "x": [row.strftime("%Y-%m-%d %H:%M:%S") for row in data["hourly"]["time"]],
         "y": data["hourly"][component],
-        "type": "scatter",
-        "name": f"Hourly {component}"
+        "type": chart_type,
+        "name": f"hourly {component} ({component_unitsH[component]})"
     })
 
 # Plot daily components
 for component in componentD:
-    plt.plot(data["daily"]["time"], data["daily"][component], label=f"Daily {component}", marker='o')
+    plot_function = chart_types_mapping.get(chart_type, plt.plot)
+    plot_function(data["daily"]["time"], data["daily"][component], label=f"Daily {component} ({component_unitsD[component]})")
 
-    # Add data to the plot_data list
     plot_data.append({
         "x": [row.strftime("%Y-%m-%d") for row in data["daily"]["time"]],
         "y": data["daily"][component],
-        "type": "scatter",
-        "name": f"Daily {component}"
+        "type": chart_type,
+        "name": f"daily {component} ({component_unitsD[component]})"
     })
 
-plt.xlabel('Time')
-plt.ylabel('Concentration')
-plt.title('Air Quality Components Over Time')
 plt.legend()
 plt.xticks(rotation=45)
 plt.tight_layout()
