@@ -1,5 +1,4 @@
 from datetime import datetime
-from flask import Flask, request, jsonify
 import pymongo
 from bson import ObjectId, json_util
 from pprint import pprint
@@ -8,7 +7,6 @@ from datetime import datetime
 import json
 from bson import json_util
 import sys
-app = Flask(__name__)
 
 # Kết nối đến MongoDB
 myclient = pymongo.MongoClient("mongodb://localhost:27017/CCD")

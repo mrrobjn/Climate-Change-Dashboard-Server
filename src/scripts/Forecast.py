@@ -1,5 +1,4 @@
 from datetime import datetime
-from flask import Flask, request, jsonify
 import pymongo
 from bson import ObjectId, json_util
 from pprint import pprint

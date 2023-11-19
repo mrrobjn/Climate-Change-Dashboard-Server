@@ -10,7 +10,7 @@ export const getArticles = async (req, res) => {
   const limit = parseInt(req.query.limit) || 4;
   const searchQuery = req.query.search || "";
   const sortField = req.query.field || "createdAt"; // default sort field is 'createdAt'
-  const sortOrder = req.query.order === "desc" ? -1 : 1; // default sort order is ascending
+  const sortOrder = req.query.order === "asc" ? 1 : -1; // default sort order is descending
 
   try {
     const articles = await Article.find({
