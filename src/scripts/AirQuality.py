@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import json
 import sys
 
-# Kết nối đến MongoDB
 myclient = pymongo.MongoClient("mongodb://localhost:27017/CCD")
 
 mycollection = myclient.CCD["air-quality"]
@@ -31,19 +30,11 @@ query = {
                 "coordinates": [longitude, latitude]
             },
         }
-    },
-        "$or": [
-        {"hourly.time": {"$gte": start_datetime, "$lte": end_datetime}},
-    ]
-    
+    }
 }
 
 data = mycollection.find(query)
-result_data = [record for record in data]
-if not result_data:
-    print("No data found for the specified location and date range.")
-    sys.exit(1)
-    
+result_data = [record for record in data]  
 tmp = []
 time_positions = []
 

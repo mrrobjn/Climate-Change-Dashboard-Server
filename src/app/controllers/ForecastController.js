@@ -7,10 +7,17 @@ import { pythonConfig } from "../../config/pythonConfig.js";
 export const getForecast = async (req, res) => {
   let { latitude, longitude, hourly, daily, chart_type} = req.query;
   chart_type = chart_type || "line";
-  let options = pythonConfig([latitude, longitude, hourly, daily, chart_type])
-  PythonShell.run('Forecast.py', options).then(results=>{
-    res.json(JSON.parse(results[0]));
-  });
+  if (!hourly && !daily) {
+    return res.status(400).json({ message: "Must select at least one data type (hourly or daily)." });
+  }
+  let options = pythonConfig([latitude, longitude, hourly, daily,chart_type]);
+  PythonShell.run('Forecast.py', options)
+    .then(results => {
+      res.json(JSON.parse(results[0]));
+    })
+    .catch(error => {
+      res.status(401).json({ message: error});
+    });
 };
 
 export const crawForecast = async (req, res) => {
