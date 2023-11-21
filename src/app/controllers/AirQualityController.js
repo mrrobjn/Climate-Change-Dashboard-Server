@@ -4,12 +4,9 @@ import chalk from "chalk";
 import { convertToLocalTime } from "../../utils/convertDateTime.js";
 import moment from "moment-timezone";
 import { PythonShell } from "python-shell";
-import path from "path";
-import url from 'url';
 import { pythonConfig } from "../../config/pythonConfig.js";
 
-const __filename = url.fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+
 export const getAirQuality = async (req, res) => {
   let { latitude, longitude, hourly, start_date, end_date,chart_type } = req.query;
   chart_type = chart_type || "line";
@@ -24,6 +21,7 @@ export const getAirQuality = async (req, res) => {
     });
   };
 }
+    
 export const downloadAirQuality = async(req,res)=>{
   let { latitude, longitude, hourly, start_date, end_date } = req.query;
 
