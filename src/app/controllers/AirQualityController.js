@@ -10,16 +10,34 @@ import { pythonConfig } from "../../config/pythonConfig.js";
 export const getAirQuality = async (req, res) => {
   let { latitude, longitude, hourly, start_date, end_date,chart_type } = req.query;
   chart_type = chart_type || "line";
-  if (!latitude || !longitude || !hourly || !start_date || !end_date) {
-    res.status(400).send("Please complete all information. Do not leave any fields blank.");
+  if (!hourly) {
+   return res.status(400).json({message:"Please complete all information. Do not leave any fields blank."});
 } else {
-    let options = pythonConfig([latitude, longitude, hourly, start_date, end_date,chart_type])
-    PythonShell.run('AirQuality.py', options).then(results=>{
-      res.json(JSON.parse(results[0]));
-    }).catch(error => {
-      res.status(400).send({ error });
-    });
-  };
+    const client = await connectToDatabase();
+    const db = client.db("CCD");
+    const collection = db.collection("air-quality");
+    const startDate = new Date(start_date);
+    const endDate = new Date(end_date);
+    const query = {
+      'hourly.time': {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    };
+    const documentExists = await collection.findOne(query) !== null;
+    if (documentExists) {
+      let options = pythonConfig([latitude, longitude, hourly, start_date, end_date, chart_type]);
+      PythonShell.run('AirQuality.py', options)
+        .then(results => {
+          res.json(JSON.parse(results[0]));
+        })
+        .catch(error => {
+          res.status(401).json({ message: error});
+        });
+    } else {
+      res.status(402).json({ message: "No data exists for the requested time period." });
+    }
+  }
 }
     
 export const downloadAirQuality = async(req,res)=>{

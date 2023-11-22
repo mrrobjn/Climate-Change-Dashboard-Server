@@ -8,17 +8,35 @@ import { pythonConfig } from "../../config/pythonConfig.js";
 export const getHistorical = async (req, res) => {
   let { latitude, longitude, hourly, daily, start_date, end_date, chart_type } = req.query;
   chart_type = chart_type || "line";
-  if (!hourly && !daily) {
+  if (!hourly &&!daily) {
     return res.status(400).json({ message: "Must select at least one data type (hourly or daily)." });
+  }else{
+    const client = await connectToDatabase();
+    const db = client.db("CCD");
+    const collection = db.collection("historical");
+    const startDate = new Date(start_date);
+    const endDate = new Date(end_date);
+    const query = {
+      'hourly.time': {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    };
+    const documentExists = await collection.findOne(query) !== null;
+    if (documentExists) {
+      let options = pythonConfig([latitude, longitude, hourly,daily, start_date, end_date, chart_type]);
+      PythonShell.run('Historical.py', options)
+        .then(results => {
+          res.json(JSON.parse(results[0]));
+        })
+        .catch(error => {
+          res.status(401).json({ message: error});
+        });
+    } else {
+      res.status(402).json({ message: "No data exists for the requested time period." });
+    }
   }
-  let options = pythonConfig([latitude, longitude, hourly, daily, start_date, end_date, chart_type]);
-  PythonShell.run('Historical.py', options)
-    .then(results => {
-      res.json(JSON.parse(results[0]));
-    })
-    .catch(error => {
-      res.status(401).json({ message: error});
-    });
+
 };
 
 
