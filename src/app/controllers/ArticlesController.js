@@ -108,6 +108,65 @@ export async function deleteArticle(req, res) {
     res.json({ message: error });
   }
 }
+
+export async function deleteArticleContent(req, res) {
+  const articleId = req.body._id;
+  try {
+     const result= await ArticleContent.deleteOne({_id: articleId });
+    if (result.acknowledged ===true) {
+      res.json({ message: 'delete ArticleContent completed.' });
+    } else {
+      res.json({message: error });
+    }
+  } catch (error) {
+    console.error(error);
+    res.json({message: error });
+  }
+}
+
+export async function updateContent(req, res) {
+  const _id = req.body._id;
+  const newDesc   = req.body.desc;
+  try {
+    const result = await ArticleContent.updateOne(
+      { _id: _id },
+      { $set: { desc: newDesc } }
+    );
+    if (result.acknowledged === true) {
+      res.json({message: "Update successful" });
+    }else {
+      res.json({message: "update failed" });
+    }
+  } catch (error) {
+    res.json({message: error });
+  }
+}
+
+export async function updateArticle(req, res) {
+  const _id = req.body._id;
+  const newDesc = req.body.desc;
+  const newTitle =req.body.title;
+  const newImgUrl=req.body.img_url;
+  try {
+    const result = await Article.updateOne(
+      { _id: _id },
+      { $set: {  
+          title: newTitle,
+          desc: newDesc, 
+          img_url: newImgUrl 
+        } 
+      }
+    );
+    if (result.acknowledged === true) {
+      res.json({message: "Update successful" });
+    }else {
+      res.json({message: "update failed" });
+    }
+  } catch (error) {
+    res.json({message: error });
+  }
+}
+
 export const increaseViewCount = async (req, res) => {
   const { _id } = req.body;
   const client = await connectToDatabase();
