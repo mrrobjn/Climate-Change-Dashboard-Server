@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import { route } from "./routers/index.js";
 import bodyParser from "body-parser";
-
 import { connect } from "./config/db/index.js";
 
 connect();

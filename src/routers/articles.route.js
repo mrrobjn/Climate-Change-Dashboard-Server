@@ -8,8 +8,9 @@ router.get("/find", getSingleArticle);
 router.get("/find_detail", getArticleDetail);
 router.post("/insert",insert);
 router.delete("/delete",deleteArticle);
-router.delete("/deletecontent",deleteArticleContent)
-router.put("/updatecontent",updateContent);
-router.put("/updatearticle",updateArticle);
+router.delete("/delete_content",deleteArticleContent)
+router.post("/update_content",updateContent);
+router.post("/update_article",updateArticle);
 router.post("/increase_view",increaseViewCount);
+
 export default router;

@@ -43,6 +43,7 @@ export const getSingleArticle = async (req, res) => {
   const article = await articlesCollection.findOne({ _id: new ObjectId(id) });
   res.json(article);
 };
+
 export const getArticleDetail = async (req, res) => {
   const { id } = req.query;
   const client = await connectToDatabase();
@@ -102,6 +103,7 @@ export async function deleteArticle(req, res) {
       res.json({ message: "deletion Article completed." });
     } else {
       res.json({ message: error });
+      // error chưa khai báo ở đâu ra đây
     }
   } catch (error) {
     console.error(error);
