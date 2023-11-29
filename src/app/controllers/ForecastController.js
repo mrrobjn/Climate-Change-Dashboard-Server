@@ -19,6 +19,73 @@ export const getForecast = async (req, res) => {
       res.status(401).json({ message: error});
     });
 };
+export const downloadForecast = async (req, res) => {
+  let { latitude, longitude, hourly, daily } = req.query;
+
+  latitude = parseFloat(latitude);
+  longitude = parseFloat(longitude);
+
+  const client = await connectToDatabase();
+  const db = client.db("CCD");
+  const collection = db.collection("forecast");
+  
+  const query = {
+    location: {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [longitude, latitude],
+        },
+      },
+    },
+  };
+
+  const result = await collection.findOne(query);
+
+  if (daily) {
+      const dailyArray = daily.split(",");
+      const daily_units = {};
+
+      for (const unit of dailyArray) {
+        if (result.daily_units.hasOwnProperty(unit)) {
+          daily_units[unit] = result.daily_units[unit];
+        }
+      }
+
+      const dailyData = {};
+      for (const unit of dailyArray) {
+        if (result.daily.hasOwnProperty(unit)) {
+          dailyData[unit] = result.daily[unit];
+        }
+      }
+
+      res.json({
+        daily_units,
+        daily: dailyData,
+      });
+  } else {
+      const hourlyArray = hourly.split(",");
+      const hourly_units = {};
+
+      for (const unit of hourlyArray) {
+        if (result.hourly_units.hasOwnProperty(unit)) {
+          hourly_units[unit] = result.hourly_units[unit];
+        }
+      }
+
+      const hourlyData = {};
+      for (const unit of hourlyArray) {
+        if (result.hourly.hasOwnProperty(unit)) {
+          hourlyData[unit] = result.hourly[unit];
+        }
+      }
+
+      res.json({
+        hourly_units,
+        hourly: hourlyData,
+      });
+  }
+}
 
 export const crawForecast = async (req, res) => {
   try {
