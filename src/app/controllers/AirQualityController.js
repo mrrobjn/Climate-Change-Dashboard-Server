@@ -10,7 +10,7 @@ import { pythonConfig } from "../../config/pythonConfig.js";
 export const getAirQuality = async (req, res) => {
   let { latitude, longitude, hourly, start_date, end_date,chart_type } = req.query;
   chart_type = chart_type || "line";
-  if (!hourly) {
+  if (!hourly||!latitude||!longitude) {
    return res.status(400).json({message:"Please complete all information. Do not leave any fields blank."});
 } else {
     const client = await connectToDatabase();
@@ -39,17 +39,22 @@ export const getAirQuality = async (req, res) => {
     }
   }
 }
-    
-export const downloadAirQuality = async(req,res)=>{
+ 
+export const downloadAirQuality = async (req, res) => {
   let { latitude, longitude, hourly, start_date, end_date } = req.query;
 
   latitude = parseFloat(latitude);
   longitude = parseFloat(longitude);
-  let startDate = new Date(moment(start_date).local().format());
-  let endDate = new Date(moment(end_date).local().format());
+
+  const startDate = new Date(moment(start_date).local().format());
+  const endDate = new Date(moment(end_date).local().format());
+
+  if (!hourly||!latitude||!longitude) {
+    return res.status(400).json({ message: "All parameters cannot be left blank." });
+  }
+
   const client = await connectToDatabase();
   const db = client.db("CCD");
-
   const collection = db.collection("air-quality");
   const query = {
     location: {
@@ -61,7 +66,19 @@ export const downloadAirQuality = async(req,res)=>{
       },
     },
   };
-  const result = await collection.findOne(query)
+
+  if (start_date && end_date) {
+    query['hourly.time'] = {
+      $gte: startDate,
+      $lte: endDate,
+    };
+  }
+  const result = await collection.findOne(query);
+
+  if (!result) {
+    return res.status(404).json({ message: "No data found for the specified location and time period." });
+  }
+
   const hourlyArray = hourly.split(",");
   const hourly_units = {};
 
@@ -70,31 +87,36 @@ export const downloadAirQuality = async(req,res)=>{
       hourly_units[unit] = result.hourly_units[unit];
     }
   }
-  let newTimeArray = [];
 
+  let newTimeArray = [];
   const hourlyData = {};
-    for (const unit of hourlyArray) {
-      if (result.hourly.hasOwnProperty(unit)) {
-        let filteredData = [];
-        for (let i = 0; i < result.hourly.time.length; i++) {
-          let currentTime = new Date(result.hourly.time[i]);
-          if (currentTime >= startDate && currentTime <= endDate) {
-            filteredData.push(result.hourly[unit][i]);
-          }
+
+  for (const unit of hourlyArray) {
+    if (result.hourly.hasOwnProperty(unit)) {
+      let filteredData = [];
+      for (let i = 0; i < result.hourly.time.length; i++) {
+        let currentTime = new Date(result.hourly.time[i]);
+        if (currentTime >= startDate && currentTime <= endDate) {
+          filteredData.push(result.hourly[unit][i]);
         }
-        hourlyData[unit] = filteredData;
       }
+      hourlyData[unit] = filteredData;
     }
-    for (let i = 0; i < result.hourly.time.length; i++) {
-      let currentTime = new Date(result.hourly.time[i]);
-      if (currentTime >= startDate && currentTime <= endDate) {
-        newTimeArray.push(currentTime);
-      }
+  }
+
+  for (let i = 0; i < result.hourly.time.length; i++) {
+    let currentTime = new Date(result.hourly.time[i]);
+    if (currentTime >= startDate && currentTime <= endDate) {
+      newTimeArray.push(currentTime);
     }
-    res.json({
-      hourly_units,
-      hourly: { ...hourlyData, time: convertToLocalTime(newTimeArray) },
-    });}
+  }
+
+  res.json({
+    hourly_units,
+    hourly: { ...hourlyData, time: convertToLocalTime(newTimeArray) },
+  });
+};
+
 export const crawAirQuality = async (req, res) => {
   try {
     const client = await connectToDatabase();

@@ -41,7 +41,12 @@ export const getHistorical = async (req, res) => {
 };
 export const downloadHistorical = async (req, res) => {
   let { latitude, longitude, hourly, daily, start_date, end_date } = req.query;
-
+  if (!latitude||!longitude) {
+    return res.status(400).json({ message: "Location cannot be left blank." });
+  }
+  if (!hourly &&!daily) {
+    return res.status(400).json({ message: "Must select at least one data type (hourly or daily)." });
+  }
   latitude = parseFloat(latitude);
   longitude = parseFloat(longitude);
   let startDate = new Date(moment(start_date).local().format());
@@ -60,9 +65,18 @@ export const downloadHistorical = async (req, res) => {
       },
     },
   };
+  if (start_date && end_date) {
+    query['hourly.time'] = {
+      $gte: startDate,
+      $lte: endDate,
+    };
+  }
   const result = await collection.findOne(query);
 
-  // Kiểm tra nếu có trường daily thì xử lý daily, ngược lại xử lý hourly
+  if (!result) {
+    return res.status(404).json({ message: "No data found for the specified location and time period." });
+  }
+
   if (daily) {
     const dailyArray = daily.split(",");
     const daily_units = {};

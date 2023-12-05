@@ -21,7 +21,12 @@ export const getForecast = async (req, res) => {
 };
 export const downloadForecast = async (req, res) => {
   let { latitude, longitude, hourly, daily } = req.query;
-
+  if (!latitude||!longitude) {
+    return res.status(400).json({ message: "Location cannot be left blank." });
+  }
+  if (!hourly &&!daily) {
+    return res.status(400).json({ message: "Must select at least one data type (hourly or daily)." });
+  }
   latitude = parseFloat(latitude);
   longitude = parseFloat(longitude);
 
