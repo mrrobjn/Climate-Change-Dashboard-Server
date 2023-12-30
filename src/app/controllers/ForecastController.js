@@ -19,12 +19,13 @@ export const getForecast = async (req, res) => {
       res.status(401).json({ message: error});
     });
 };
+
 export const downloadForecast = async (req, res) => {
   let { latitude, longitude, hourly, daily } = req.query;
-  if (!latitude||!longitude) {
+  if (!latitude || !longitude) {
     return res.status(400).json({ message: "Location cannot be left blank." });
   }
-  if (!hourly &&!daily) {
+  if (!hourly && !daily) {
     return res.status(400).json({ message: "Must select at least one data type (hourly or daily)." });
   }
   latitude = parseFloat(latitude);
@@ -33,7 +34,7 @@ export const downloadForecast = async (req, res) => {
   const client = await connectToDatabase();
   const db = client.db("CCD");
   const collection = db.collection("forecast");
-  
+
   const query = {
     location: {
       $near: {
@@ -47,50 +48,56 @@ export const downloadForecast = async (req, res) => {
 
   const result = await collection.findOne(query);
 
-  if (daily) {
-      const dailyArray = daily.split(",");
-      const daily_units = {};
-
-      for (const unit of dailyArray) {
-        if (result.daily_units.hasOwnProperty(unit)) {
-          daily_units[unit] = result.daily_units[unit];
-        }
-      }
-
-      const dailyData = {};
-      for (const unit of dailyArray) {
-        if (result.daily.hasOwnProperty(unit)) {
-          dailyData[unit] = result.daily[unit];
-        }
-      }
-
-      res.json({
-        daily_units,
-        daily: dailyData,
-      });
-  } else {
-      const hourlyArray = hourly.split(",");
-      const hourly_units = {};
-
-      for (const unit of hourlyArray) {
-        if (result.hourly_units.hasOwnProperty(unit)) {
-          hourly_units[unit] = result.hourly_units[unit];
-        }
-      }
-
-      const hourlyData = {};
-      for (const unit of hourlyArray) {
-        if (result.hourly.hasOwnProperty(unit)) {
-          hourlyData[unit] = result.hourly[unit];
-        }
-      }
-
-      res.json({
-        hourly_units,
-        hourly: hourlyData,
-      });
+  if (!result) {
+    return res.status(404).json({ message: "No forecast data found for the specified location." });
   }
-}
+
+  if (daily) {
+    const dailyArray = daily.split(",");
+    const daily_units = {};
+    const dailyData = {};
+
+    for (const unit of dailyArray) {
+      if (result.daily_units.hasOwnProperty(unit)) {
+        daily_units[unit] = result.daily_units[unit];
+      }
+    }
+
+    for (const unit of dailyArray) {
+      if (result.daily.hasOwnProperty(unit)) {
+        dailyData[unit] = result.daily[unit];
+      }
+    }
+
+    dailyData.time = result.daily.time;
+    res.json({
+      daily_units,
+      daily: dailyData,
+    });
+  } else {
+    const hourlyArray = hourly.split(",");
+    const hourly_units = {};
+    const hourlyData = {};
+
+    for (const unit of hourlyArray) {
+      if (result.hourly_units.hasOwnProperty(unit)) {
+        hourly_units[unit] = result.hourly_units[unit];
+      }
+    }
+    for (const unit of hourlyArray) {
+      if (result.hourly.hasOwnProperty(unit)) {
+        hourlyData[unit] = result.hourly[unit];
+      }
+    }
+    hourlyData.time = result.hourly.time;
+    res.json({
+      hourly_units,
+      hourly: hourlyData,
+    });
+  }
+};
+
+
 
 export const crawForecast = async (req, res) => {
   try {
