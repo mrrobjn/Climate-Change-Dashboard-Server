@@ -163,8 +163,8 @@ export const crawHistorical = async (req, res) => {
     const totalCountries = countries.length;
     let completedCountries = 0;
 
-    const historicalStartDate = "2022-07-29";
-    const historicalEndDate = "2023-10-07";
+    const historicalStartDate = "2023-12-18";
+    const historicalEndDate = "2024-01-01";
 
     for (let country of countries) {
       const existingDocs = await weatherCollection.findOne({

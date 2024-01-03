@@ -33,7 +33,7 @@ query = {
     }
 }
 
-data = mycollection.find(query)
+data = mycollection.find(query).limit(1)
 result_data = [record for record in data]  
 tmp = []
 time_positions = []
@@ -78,7 +78,6 @@ if chart_type and chart_type not in valid_chart_types:
 chart_types_mapping = {
     "line": plt.plot,
     "bar": plt.bar,
-
 }
 
 plot_function = chart_types_mapping.get(chart_type, plt.plot)

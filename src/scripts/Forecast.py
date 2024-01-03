@@ -23,7 +23,7 @@ query = {
         }
     }
 }
-data = mycollection.find(query)
+data = mycollection.find(query).limit(1)
 result_data = [record for record in data]
 
 if componentH:

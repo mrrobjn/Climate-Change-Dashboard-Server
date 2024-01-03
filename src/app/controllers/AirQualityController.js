@@ -135,7 +135,7 @@ export const crawAirQuality = async (req, res) => {
       if (!existingDoc) {
         try {
           const data = await fetchAPI(
-            `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${country.latitude}&longitude=${country.longitude}&hourly=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,aerosol_optical_depth,dust,uv_index,uv_index_clear_sky,ammonia,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen&start_date=2022-07-29&end_date=2023-11-15`
+            `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${country.latitude}&longitude=${country.longitude}&hourly=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,aerosol_optical_depth,dust,uv_index,uv_index_clear_sky,ammonia,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen&start_date=2023-12-18&end_date=2024-01-01`
           );
           if (data.latitude) {
             data.hourly.time = data.hourly.time.map((time) => new Date(time));
@@ -169,7 +169,7 @@ export const crawAirQuality = async (req, res) => {
             `An error occurred while fetching data for ${country.name}: ${error}`
           );
         }
-        await new Promise((resolve) => setTimeout(resolve, 20000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       } else {
         console.log(chalk.green(`Doc exist at: ${country.name}`));
       }

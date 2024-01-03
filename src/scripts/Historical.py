@@ -30,7 +30,7 @@ query = {
         }
     }
 }
-data = mycollection.find(query)
+data = mycollection.find(query).limit(1)
 result_data = [record for record in data]
 
 # Xử lý dữ liệu hàng giờ nếu componentH không rỗng

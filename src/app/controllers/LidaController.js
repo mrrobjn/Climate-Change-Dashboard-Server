@@ -51,7 +51,9 @@ class LidaController {
         }
       });
     } catch (error) {
-      res.json(error);
+      res.status(400).json({
+        message: "Invalid Goal format",
+      });
     }
   }
 
@@ -65,15 +67,15 @@ class LidaController {
         if (isBase64(results[0])) {
           res.json(results[0]);
         } else {
-          res
+          return res
             .status(400)
             .json({ message: "Something wrong, please try again" });
         }
       });
     } catch (error) {
-      res.json(error);
+      res.status(400).json({ message: "Something wrong, please try again" });
     }
   }
 }
 
-export default new LidaController;
+export default new LidaController();
